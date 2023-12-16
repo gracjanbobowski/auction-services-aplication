@@ -9,30 +9,39 @@ import java.time.LocalDateTime;
 //Auction: Reprezentuje aukcję.
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "auctions")
+@Table(name = "Auctions")
 public class Auction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "auction_id")
+    @Column(name = "auctionId")
     private BigDecimal id;
 
     @ManyToOne
-    @JoinColumn(name = "seller_id")
+    @JoinColumn(name = "sellerId")
     private User seller;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "categoryId")
     private Category category;
 
+    @Column(name = "title")
     private String title;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "startingPrice")
     private double startingPrice;
+
+    @Column(name = "currentPrice")
     private double currentPrice;
+
+    @Column(name = "startTime")
     private LocalDateTime startTime;
+
+    @Column(name = "endTime")
     private LocalDateTime endTime;
 
 }

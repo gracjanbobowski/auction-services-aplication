@@ -17,12 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "userId")
     private BigDecimal id;
 
     @OneToMany(mappedBy = "seller")
@@ -34,8 +34,13 @@ public class User {
     @OneToMany(mappedBy = "reviewer")
     private List<TransactionRating> transactionRatings;
 
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
     private String password;
 
 }

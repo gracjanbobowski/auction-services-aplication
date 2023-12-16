@@ -10,22 +10,25 @@ import java.time.LocalDateTime;
 //TransactionRating: Reprezentuje ocenę transakcji.
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "transaction_ratings")
+@Table(name = "TransactionRatings")
 public class TransactionRating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transaction_rating_id")
+    @Column(name = "transactionRatingId")
     private BigDecimal id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     private User reviewer;
 
+    @Column(name = "ratingTime")
     private LocalDateTime ratingTime;
+
+    @Column(name = "rating")
     private int rating;
+
+    @Column(name = "comment")
     private String comment;
 }

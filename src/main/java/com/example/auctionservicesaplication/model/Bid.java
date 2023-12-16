@@ -8,25 +8,26 @@ import java.time.LocalDateTime;
 
 //Bid: Reprezentuje ofertę licytacyjną.
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "bids")
+@Table(name = "Bids")
 public class Bid {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bid_id")
+    @Column(name = "bidId")
     private BigDecimal id;
 
     @ManyToOne()
-    @JoinColumn(name = "auction_id")
+    @JoinColumn(name = "auctionId")
     private Auction auction;
 
     @ManyToOne()
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     private User bidder;
 
+    @Column(name = "bidAmount")
     private double bidAmount;
+
+    @Column(name = "bidTime")
     private LocalDateTime bidTime;
 }
