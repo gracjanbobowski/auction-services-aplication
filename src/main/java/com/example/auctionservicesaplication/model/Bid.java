@@ -17,13 +17,13 @@ public class Bid {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bid_id")
-    private BigDecimal id;
+    private Long id;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User bidder;
 
