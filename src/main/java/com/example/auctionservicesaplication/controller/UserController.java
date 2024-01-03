@@ -5,7 +5,10 @@ import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,8 +36,9 @@ public class UserController {
 
     // Endpoint do wyświetlania szczegółów danego użytkownika
     @GetMapping("/{userId}")
-    public String getUserDetails(@PathVariable Long userId, Model model) {
-        User user = userService.getUserById(BigDecimal.valueOf(userId));
+    public String getUserDetails(@PathVariable String userId, Model model) {
+        Long userIdLong = Long.parseLong(userId);
+        User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
         model.addAttribute("user", user);
         return "userDetails"; // Załóżmy, że mamy plik HTML o nazwie "userDetails.html" do wyświetlenia szczegółów użytkownika
     }
@@ -55,23 +59,28 @@ public class UserController {
 
     // Endpoint do wyświetlania formularza edycji użytkownika
     @GetMapping("/{userId}/edit")
-    public String getEditForm(@PathVariable Long userId, Model model) {
-        User user = userService.getUserById(BigDecimal.valueOf(userId));
+    public String getEditForm(@PathVariable String userId, Model model) {
+        Long userIdLong = Long.parseLong(userId);
+        User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
         model.addAttribute("user", user);
         return "editForm"; // Załóżmy, że mamy plik HTML o nazwie "editForm.html" z formularzem edycji użytkownika
     }
 
     // Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
+// Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
     @PostMapping("/{userId}/edit")
-    public String editUser(@PathVariable Long userId, @ModelAttribute User editedUser) {
-        userService.editUser(BigDecimal.valueOf(userId), editedUser);
-        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej edycji
+    public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
+        Long userIdLong = Long.parseLong(userId);
+        userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
+        return "redirect:/users";   // Przekierowanie do listy użytkowników po udanej edycji
     }
+
 
     // Endpoint do usuwania użytkownika
     @GetMapping("/{userId}/delete")
-    public String deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(BigDecimal.valueOf(userId));
+    public String deleteUser(@PathVariable String userId) {
+        Long userIdLong = Long.parseLong(userId);
+        userService.deleteUser(BigDecimal.valueOf(userIdLong));
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym usunięciu
     }
 }
