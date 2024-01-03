@@ -11,6 +11,7 @@ import java.util.List;
 //AuctionService: Logika biznesowa związana z aukcjami.
 @Service
 public class AuctionService {
+
     @Autowired
     JdbcTemplate jdbcTemplate;
 
