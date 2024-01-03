@@ -18,7 +18,7 @@ public class Auction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
-    private BigDecimal id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
@@ -32,7 +32,11 @@ public class Auction {
     private String description;
     private double startingPrice;
     private double currentPrice;
+
+    @Column(name = "start_time")
     private LocalDateTime startTime;
+
+    @Column(name = "end_time")
     private LocalDateTime endTime;
 
 }

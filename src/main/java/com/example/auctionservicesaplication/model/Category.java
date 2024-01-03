@@ -22,7 +22,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
-    private BigDecimal id;
+    private Long id;
 
     @OneToMany(mappedBy = "category")
     private List<Auction> auctions;
