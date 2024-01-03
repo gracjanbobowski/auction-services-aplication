@@ -33,8 +33,8 @@ public class UserController {
 
     // Endpoint do wyświetlania szczegółów danego użytkownika
     @GetMapping("/{userId}")
-    public String getUserDetails(@PathVariable BigDecimal userId, Model model) {
-        User user = userService.getUserById(userId);
+    public String getUserDetails(@PathVariable Long userId, Model model) {
+        User user = userService.getUserById(BigDecimal.valueOf(userId));
         model.addAttribute("user", user);
         return "userDetails"; // Załóżmy, że mamy plik HTML o nazwie "userDetails.html" do wyświetlenia szczegółów użytkownika
     }
@@ -55,28 +55,27 @@ public class UserController {
 
     // Endpoint do wyświetlania formularza edycji użytkownika
     @GetMapping("/{userId}/edit")
-    public String getEditForm(@PathVariable BigDecimal userId, Model model) {
-        User user = userService.getUserById(userId);
+    public String getEditForm(@PathVariable Long userId, Model model) {
+        User user = userService.getUserById(BigDecimal.valueOf(userId));
         model.addAttribute("user", user);
         return "editForm"; // Załóżmy, że mamy plik HTML o nazwie "editForm.html" z formularzem edycji użytkownika
     }
 
     // Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
     @PostMapping("/{userId}/edit")
-    public String editUser(@PathVariable BigDecimal userId, @ModelAttribute User editedUser) {
-        userService.editUser(userId, editedUser);
+    public String editUser(@PathVariable Long userId, @ModelAttribute User editedUser) {
+        userService.editUser(BigDecimal.valueOf(userId), editedUser);
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej edycji
     }
 
     // Endpoint do usuwania użytkownika
     @GetMapping("/{userId}/delete")
-    public String deleteUser(@PathVariable BigDecimal userId) {
-        userService.deleteUser(userId);
+    public String deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(BigDecimal.valueOf(userId));
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym usunięciu
     }
 }
 
-//
 //Opisy:
 //
 //        getAllUsers: Endpoint do wyświetlania listy wszystkich użytkowników.
