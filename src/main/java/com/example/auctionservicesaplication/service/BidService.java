@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+
+
 @Service
 public class BidService {
 
@@ -38,6 +40,7 @@ public class BidService {
         existingBid.setId(editedBid.getId());
         existingBid.setBidTime(editedBid.getBidTime());
         existingBid.setBidAmount(editedBid.getBidAmount());
+        existingBid.setAuction(editedBid.getAuction());
         bidRepository.save(existingBid);
     }
 
