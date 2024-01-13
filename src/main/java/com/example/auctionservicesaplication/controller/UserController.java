@@ -85,6 +85,8 @@ public class UserController {
     }
 }
 
+// fixMe : Byłem tu :)
+
 //Opisy:
 //
 //        getAllUsers: Endpoint do wyświetlania listy wszystkich użytkowników.
