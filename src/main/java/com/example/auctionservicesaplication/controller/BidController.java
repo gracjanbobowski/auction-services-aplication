@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+
 @Controller
 @RequestMapping("/bids")
 public class BidController {
@@ -26,7 +27,7 @@ public class BidController {
     public String getAllbids(Model model) {
         List<Bid> bids = bidService.getAllBids();
         model.addAttribute("bids", bids);
-        return "bidsUser";
+        return "bids";
     }
 
     @GetMapping("/{bidId}")
@@ -37,9 +38,9 @@ public class BidController {
     }
 
     @GetMapping("/create")
-    public String getCreateForm(Model model) {
+    public String getCreatedForm(Model model) {
         model.addAttribute("bid", new Bid());
-        return "createForm";
+        return "createdForm";
     }
 
     @PostMapping("/create")
