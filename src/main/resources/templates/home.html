@@ -1,35 +1,52 @@
-<!-- home.html -->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strona główna</title>
-    <!-- Dodaj link do arkusza stylów Bootstrap -->
+    <title>Aukcyjny Serwis</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 </head>
 <body>
+
 <header class="container mt-3">
-    <h1>Witaj na stronie głównej aukcyjnego systemu!</h1>
+    <h1>Witaj na aukcyjnym serwisie!</h1>
+    <div class="dropdown float-right">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-sign-in-alt"></i> Zaloguj/Zarejestruj
+        </button>
+        <div class="dropdown-menu" aria-labelledby="loginDropdown">
+            <a class="dropdown-item" th:href="@{/login}">Zaloguj się</a>
+            <a class="dropdown-item" th:href="@{/users/register}">Zarejestruj się</a>
+        </div>
+    </div>
 </header>
+
 <section class="container mt-3">
-    <h2>Różne kategorie</h2>
-    <!-- Dodaj sekcje z różnymi kategoriami -->
+    <h2>Przykładowe sekcje</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <h3>Aukcje</h3>
+            <p>Przeglądaj wszystkie aukcje</p>
+            <a th:href="@{/auctions}" class="btn btn-info">Przeglądaj aukcje</a>
+        </div>
+        <div class="col-md-4">
+            <h3>Licytacje</h3>
+            <p>Przeglądaj wszystkie licytacje</p>
+            <a th:href="@{/bids}" class="btn btn-info">Przeglądaj licytacje</a>
+        </div>
+        <div class="col-md-4">
+            <h3>Użytkownicy</h3>
+            <p>Przeglądaj wszystkich użytkowników</p>
+            <a th:href="@{/users}" class="btn btn-info">Przeglądaj użytkowników</a>
+        </div>
+    </div>
 </section>
-<section class="container mt-3">
-    <h2>Ostatnio dodane aukcje</h2>
-    <!-- Dodaj sekcje z ostatnio dodanymi aukcjami -->
-</section>
-<section class="container mt-3">
-    <h2>Kończące się aukcje</h2>
-    <!-- Dodaj sekcje z kończącymi się aukcjami -->
-</section>
-<!-- Dodaj inne sekcje według potrzeb -->
+
 <footer class="container mt-3">
-    <p>&copy; 2024 Aukcyjny System</p>
+    <p>&copy; 2024 Aukcyjny Serwis</p>
 </footer>
 
-<!-- Dodaj skrypty Bootstrap i inne skrypty według potrzeb -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
