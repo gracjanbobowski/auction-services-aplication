@@ -5,6 +5,7 @@ import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,17 +36,31 @@ public class UserService {
         userRepository.save(user);
     }
 
+//    public void editUser(BigDecimal userId, User editedUser) {
+//        User existingUser = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+//
+//        // Dodaj logikę edycji danych użytkownika
+//        existingUser.setUsername(editedUser.getUsername());
+//        existingUser.setEmail(editedUser.getEmail());
+//        existingUser.setPassword(editedUser.getPassword());
+//
+//        userRepository.save(existingUser);
+//    }
+
+    @Transactional
     public void editUser(BigDecimal userId, User editedUser) {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        // Dodaj logikę edycji danych użytkownika
+        // Aktualizuj dane użytkownika
         existingUser.setUsername(editedUser.getUsername());
         existingUser.setEmail(editedUser.getEmail());
         existingUser.setPassword(editedUser.getPassword());
 
         userRepository.save(existingUser);
     }
+
 
     public void deleteUser(BigDecimal userId) {
         User userToDelete = userRepository.findById(userId)

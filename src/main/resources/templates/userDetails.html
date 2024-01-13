@@ -8,18 +8,28 @@
 <body>
 
 <div class="container mt-5">
-  <h1>User Details</h1>
-
-  <div class="card">
-    <div class="card-body">
-      <p class="card-text">ID: <span th:text="${user.id}"></span></p>
-      <p class="card-text">Username: <span th:text="${user.username}"></span></p>
-      <p class="card-text">Email: <span th:text="${user.email}"></span></p>
-      <!-- Add other user attributes as needed -->
-    </div>
+  <!-- Sprawdź, czy są komunikaty sukcesu lub błędu -->
+  <div th:if="${success}" class="alert alert-success" role="alert">
+    <strong th:text="${success}"></strong>
+  </div>
+  <div th:if="${error}" class="alert alert-danger" role="alert">
+    <strong th:text="${error}"></strong>
   </div>
 
-  <a href="/users" class="btn btn-primary mt-3">Back to User List</a>
+  <h1>User Details</h1>
+
+  <!-- Wyświetl szczegóły użytkownika -->
+  <div>
+    <strong>ID:</strong> <span th:text="${user.id}"></span><br>
+    <strong>Username:</strong> <span th:text="${user.username}"></span><br>
+    <strong>Email:</strong> <span th:text="${user.email}"></span><br>
+    <!-- Dodaj inne atrybuty użytkownika, jeśli są potrzebne -->
+  </div>
+
+  <!-- Dodaj inne elementy wizualne, takie jak przyciski itp. -->
+
+  <!-- Przykład przycisku powrotu do listy użytkowników -->
+  <a href="/users" class="btn btn-secondary mt-3">Back to User List</a>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

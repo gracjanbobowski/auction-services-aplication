@@ -1,6 +1,7 @@
 package com.example.auctionservicesaplication.controller;
 
 import com.example.auctionservicesaplication.model.User;
+import com.example.auctionservicesaplication.repository.UserRepository;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 
 //UserController: Obsługuje żądania związane z użytkownikami.
@@ -17,10 +19,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     // Endpoint do wyświetlania listy wszystkich użytkowników
@@ -64,14 +68,12 @@ public class UserController {
     }
 
     // Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
-// Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
     @PostMapping("/{userId}/edit")
     public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
         Long userIdLong = Long.parseLong(userId);
         userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
-        return "redirect:/users";   // Przekierowanie do listy użytkowników po udanej edycji
+        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej edycji
     }
-
 
     // Endpoint do usuwania użytkownika
     @GetMapping("/{userId}/delete")
@@ -81,6 +83,8 @@ public class UserController {
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym usunięciu
     }
 }
+
+// fixMe : Byłem tu :)
 
 //Opisy:
 //
