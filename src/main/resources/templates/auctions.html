@@ -1,0 +1,45 @@
+<!-- auctions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List of Auctions</title>
+    <!-- Dodaj link do arkusza stylów Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<header class="container mt-3">
+    <h1>List of Auctions</h1>
+</header>
+<section class="container mt-3">
+    <!-- Wyświetl listę aukcji -->
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Auction ID</th>
+            <th scope="col">Title</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Iteruj przez aukcje i wyświetl informacje -->
+        <tr th:each="auction : ${auctions}">
+            <td th:text="${auction.id}"></td>
+            <td th:text="${auction.title}"></td>
+            <td>
+                <!-- Dodaj linki do szczegółów, edycji i usunięcia aukcji -->
+                <a th:href="@{/auctions/{auctionId}(auctionId=${auction.id})}">Details</a>
+                <a th:href="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}">Edit</a>
+                <a th:href="@{/auctions/{auctionId}/delete(auctionId=${auction.id})}">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+<section class="container mt-3">
+    <!-- Dodaj link do formularza tworzenia nowej aukcji -->
+    <a th:href="@{/auctions/create}">Create New Auction</a>
+</section>
+</body>
+</html>
