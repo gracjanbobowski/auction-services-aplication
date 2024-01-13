@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,8 +36,13 @@ public class User {
     @OneToMany(mappedBy = "reviewer")
     private List<TransactionRating> transactionRatings;
 
+    @NotEmpty(message = "Username is required")
     private String username;
+
+    @NotEmpty(message = "Email is required")
     private String email;
+
+    @NotEmpty(message = "Password is required")
     private String password;
 
 }
