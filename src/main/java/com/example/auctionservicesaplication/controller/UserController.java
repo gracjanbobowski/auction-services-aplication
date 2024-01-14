@@ -2,6 +2,7 @@ package com.example.auctionservicesaplication.controller;
 
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.UserRepository;
+import com.example.auctionservicesaplication.service.EmailService;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 
 //UserController: Obsługuje żądania związane z użytkownikami.
@@ -20,11 +20,13 @@ public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository, EmailService emailService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // Endpoint do wyświetlania listy wszystkich użytkowników
@@ -55,6 +57,7 @@ public class UserController {
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user) {
         userService.registerUser(user);
+        emailService.sendRegistrationConfirmation(user.getEmail(), user.getUsername());
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej rejestracji
     }
 
