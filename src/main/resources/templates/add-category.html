@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dodaj Kategorię</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body class="container">
+<h2>Dodaj Kategorię</h2>
+<form th:action="@{/categories/add}" th:object="${category}" method="post">
+  <label for="categoryName">Nazwa kategorii:</label>
+  <input type="text" id="categoryName" name="categoryName" th:field="*{categoryName}" class="form-control" required>
+
+  <label for="description">Opis:</label>
+  <textarea id="description" name="description" th:field="*{description}" class="form-control"></textarea>
+
+  <button type="submit" class="btn btn-success mt-2">Dodaj Kategorię</button>
+</form>
+<a th:href="@{/}" class="btn btn-primary mt-2">Powrót</a>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -2,6 +2,8 @@ package com.example.auctionservicesaplication.controller;
 
 import com.example.auctionservicesaplication.model.Auction;
 import com.example.auctionservicesaplication.service.AuctionService;
+import com.example.auctionservicesaplication.service.CategoryService;
+import com.example.auctionservicesaplication.model.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +18,12 @@ import java.util.List;
 public class AuctionController {
 
     private final AuctionService auctionService;
+    private final CategoryService categoryService;
 
     @Autowired
-    public AuctionController(AuctionService auctionService) {
+    public AuctionController(AuctionService auctionService, CategoryService categoryService) {
         this.auctionService = auctionService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping
@@ -29,42 +33,49 @@ public class AuctionController {
         return "auctions";
     }
 
+
     @GetMapping("/{auctionId}")
-    public String getAuctionDetails(@PathVariable Long auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(BigDecimal.valueOf(auctionId));
+    public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
+        Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
         return "auctionDetails";
     }
 
     @GetMapping("/create")
-    public String getCreatedForm(Model model) {
+    public String getCreateForm(Model model) {
         model.addAttribute("auction", new Auction());
-        return "createdForm";
+        List<Category> categories = categoryService.getAllCategories();
+        model.addAttribute("categories", categories);
+        return "createdForm"; // Corrected template name
     }
 
-    @PostMapping("/craete")
+    @PostMapping("/create")
     public String createAuction(@ModelAttribute Auction auction, Model model) {
         auctionService.createAuction(auction);
         return "redirect:/auctions";
     }
 
     @GetMapping("/{auctionId}/edit")
-    public String getEditForm(@PathVariable Long auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(BigDecimal.valueOf(auctionId));
+    public String getEditForm(@PathVariable BigDecimal auctionId, Model model) {
+        Auction auction = auctionService.getAuctionById(auctionId);
+        List<Category> categories = categoryService.getAllCategories();
         model.addAttribute("auction", auction);
-        return "editForm";
+        model.addAttribute("categories", categories);
+        return "editFormAuction";
     }
 
     @PostMapping("/{auctionId}/edit")
-    public String editAuction(@PathVariable Long auctionId, @ModelAttribute Auction editedAuction) {
-        auctionService.editAuction(BigDecimal.valueOf(auctionId), editedAuction);
+    public String editAuction(@ModelAttribute Auction auction, @PathVariable BigDecimal auctionId) {
+        if (auctionService.getAuctionById(auctionId) == null) {
+            return "auctionNotFound";
+        }
+        auctionService.editAuction(auctionId, auction);
         return "redirect:/auctions";
     }
 
     @GetMapping("/{auctionId}/delete")
-    public String deleteAuction(@PathVariable Long auctionId) {
-        auctionService.deleteAuction(BigDecimal.valueOf(auctionId));
+    public String deleteAuction(@PathVariable BigDecimal auctionId) {
+        auctionService.deleteAuction(auctionId);
         return "redirect:/auctions";
     }
-
 }
