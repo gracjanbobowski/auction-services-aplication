@@ -2,19 +2,16 @@ package com.example.auctionservicesaplication.model;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 //User: Reprezentuje użytkownika.
 
+@Getter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,6 +19,7 @@ import java.util.List;
 @Table(name = "users")
 public class User {
 
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -44,5 +42,18 @@ public class User {
 
     @NotEmpty(message = "Password is required")
     private String password;
+
+    private  boolean enabled;
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "users_role",
+        joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Getter
+    private Set<Role> roles = new HashSet<>();
+
+
+
 
 }
