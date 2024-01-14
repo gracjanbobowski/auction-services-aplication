@@ -28,33 +28,46 @@ public class AuctionService {
 
     public Auction getAuctionById(BigDecimal auctionId) {
         return auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionNotFoundException("Auction not found whit ID: " + auctionId));
+                .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
     }
 
-    public void createAuction(Auction auction) {
-        auctionRepository.save(auction);
+    public Auction createAuction(Auction auction) {
+        // Upewnij się, że kategoria nie jest null
+        if (auction.getCategory() == null) {
+            // Obsłuż błąd, np. rzucenie wyjątku lub zwrócenie odpowiedzi błędu
+            throw new IllegalArgumentException("Kategoria aukcji nie może być pusta.");
+        }
+
+        return auctionRepository.save(auction);
     }
+
     public void editAuction(BigDecimal auctionId, Auction editedAuction) {
         Auction existingAuction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionNotFoundException("Auction not found with ID: " + auctionId));
+                .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
 
-        existingAuction.setCategory(editedAuction.getCategory());
-        existingAuction.setId(editedAuction.getId());
+        if (editedAuction.getCategory() != null) {
+            existingAuction.setCategory(editedAuction.getCategory());
+        }
+
         existingAuction.setTitle(editedAuction.getTitle());
         existingAuction.setDescription(editedAuction.getDescription());
         existingAuction.setStartingPrice(editedAuction.getStartingPrice());
-        existingAuction.setCurrentPrice(editedAuction.getCurrentPrice());
+
+        if (editedAuction.getCurrentPrice() != null) {
+            existingAuction.setCurrentPrice(editedAuction.getCurrentPrice());
+        }
+
         existingAuction.setStartTime(editedAuction.getStartTime());
         existingAuction.setEndTime(editedAuction.getEndTime());
-        auctionRepository.save(editedAuction);
+
+        auctionRepository.save(existingAuction);
     }
 
     public void deleteAuction(BigDecimal auctionId) {
         Auction auctionToDelete = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionNotFoundException("Auction not found with ID: " + auctionId));
+                .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
 
-                auctionRepository.delete(auctionToDelete);
+        auctionRepository.delete(auctionToDelete);
     }
-
 }
 

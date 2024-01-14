@@ -27,9 +27,8 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Auction> auctions;
 
+    @Column(name = "category_name")
     private String categoryName;
+
     private String description;
-
-
-
 }

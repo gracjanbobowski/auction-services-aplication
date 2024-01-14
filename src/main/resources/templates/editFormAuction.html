@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formularz Edycji Aukcji</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body class="container">
+<h2>Formularz Edycji Aukcji</h2>
+<form th:object="${auction}" th:action="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}" method="post">
+  <label for="title">Tytuł:</label>
+  <input type="text" id="title" name="title" th:field="*{title}" class="form-control" required>
+
+  <label for="description">Opis:</label>
+  <textarea id="description" name="description" th:field="*{description}" class="form-control" required></textarea>
+
+  <label for="startingPrice">Cena początkowa:</label>
+  <input type="number" id="startingPrice" name="startingPrice" th:field="*{startingPrice}" class="form-control" required>
+
+  <label for="startTime">Czas rozpoczęcia:</label>
+  <input type="datetime-local" id="startTime" name="startTime" th:field="*{startTime}" class="form-control" required>
+
+  <label for="endTime">Czas zakończenia:</label>
+  <input type="datetime-local" id="endTime" name="endTime" th:field="*{endTime}" class="form-control" required>
+
+  <label for="category">Kategoria:</label>
+  <select id="category" name="category" th:field="*{category.id}" class="form-control" required>
+    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.categoryName}"></option>
+  </select>
+
+  <button type="submit" class="btn btn-success mt-2">Zapisz zmiany</button>
+</form>
+<a th:href="@{/auctions}" class="btn btn-primary mt-2">Powrót do listy aukcji</a>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

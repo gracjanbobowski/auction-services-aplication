@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szczegóły Aukcji</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body class="container">
+<h2>Szczegóły Aukcji</h2>
+<div>
+    <p>ID: <span th:text="${auction.id}"></span></p>
+    <p>Tytuł: <span th:text="${auction.title}"></span></p>
+    <p>Opis: <span th:text="${auction.description}"></span></p>
+    <!-- Dodaj inne pola danych według potrzeb -->
+</div>
+<a th:href="@{/auctions}" class="btn btn-primary">Powrót do listy aukcji</a>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
