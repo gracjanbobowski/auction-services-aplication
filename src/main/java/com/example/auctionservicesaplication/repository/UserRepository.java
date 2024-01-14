@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 //UserRepository: Repozytorium do zarządzania użytkownikami w bazie danych.
 @Repository
 public interface UserRepository extends JpaRepository<User, BigDecimal> {
-    @Query("SELECT u FROM user u WHERE u.username = :username")
-    public User getUserByUsername(@Param("username") String username);
+//    @Query("SELECT u FROM user u WHERE u.username = :username")
+//    public User getUserByUsername(@Param("username") String username);
 
     // Dodatkowe metody związane z bazą danych, jeśli są potrzebne
 }
