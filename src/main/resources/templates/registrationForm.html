@@ -28,7 +28,12 @@
 
     <button type="submit" class="btn btn-primary">Register</button>
   </form>
+  <!-- Dodaj poniższy komunikat -->
+  <div th:if="${param.success}" class="alert alert-success mt-3">
+    Rejestracja udana! Sprawdź swoją skrzynkę pocztową.
+  </div>
 </div>
+<!-- Pozostała część pliku HTML -->
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

@@ -19,6 +19,12 @@
         <tr>
             <th scope="col">Auction ID</th>
             <th scope="col">Title</th>
+            <th scope="col">Seller</th>
+            <th scope="col">Category</th>
+            <th scope="col">Starting Price</th>
+            <th scope="col">Current Price</th>
+            <th scope="col">Start Time</th>
+            <th scope="col">End Time</th>
             <th scope="col">Actions</th>
         </tr>
         </thead>
@@ -27,6 +33,12 @@
         <tr th:each="auction : ${auctions}">
             <td th:text="${auction.id}"></td>
             <td th:text="${auction.title}"></td>
+            <td th:text="${auction.seller?.username}"></td>
+            <td th:text="${auction.category.categoryName}"></td>
+            <td th:text="${auction.startingPrice}"></td>
+            <td th:text="${auction.currentPrice}"></td>
+            <td th:text="${auction.startTime}"></td>
+            <td th:text="${auction.endTime}"></td>
             <td>
                 <!-- Dodaj linki do szczegółów, edycji i usunięcia aukcji -->
                 <a th:href="@{/auctions/{auctionId}(auctionId=${auction.id})}">Details</a>
@@ -40,6 +52,9 @@
 <section class="container mt-3">
     <!-- Dodaj link do formularza tworzenia nowej aukcji -->
     <a th:href="@{/auctions/create}">Create New Auction</a>
+
+    <!-- Dodaj przycisk "Powrót" do strony głównej -->
+    <a th:href="@{/}" class="btn btn-primary">Powrót</a>
 </section>
 </body>
 </html>
