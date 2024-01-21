@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <title>Registration Form</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
-<div class="container mt-5">
-  <h1>Registration Form</h1>
+<header class="container mt-3">
+  <h1>Rejestracja użytkownika</h1>
+</header>
+<div class="container mt-3">
 
   <form th:action="@{/users/register}" th:object="${user}" method="post">
     <div class="form-group">
@@ -26,13 +28,16 @@
       <input type="password" class="form-control" id="password" th:field="*{password}" required>
     </div>
 
-    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="submit" class="btn btn-success mt-2">Zarejestruj</button>
   </form>
   <!-- Dodaj poniższy komunikat -->
   <div th:if="${param.success}" class="alert alert-success mt-3">
     Rejestracja udana! Sprawdź swoją skrzynkę pocztową.
   </div>
 </div>
+<section class="container mt-3">
+  <a th:href="@{/}" class="btn btn-primary mt-2">Powrót</a>
+</section>
 <!-- Pozostała część pliku HTML -->
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

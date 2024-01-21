@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aukcyjny Serwis</title>
+    <title>Serwis Aukcyjny</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <header class="container mt-3">
-    <h1>Witaj na aukcyjnym serwisie!</h1>
-    <div class="dropdown float-right">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-sign-in-alt"></i> Zaloguj/Zarejestruj
-        </button>
-        <div class="dropdown-menu" aria-labelledby="loginDropdown">
-            <a class="dropdown-item" th:href="@{/login}">Zaloguj się</a>
-            <a class="dropdown-item" th:href="@{/users/register}">Zarejestruj się</a>
+    <div class="header-flex">
+        <h1>Serwis Aukcyjny</h1>
+        <div class="dropdown float-right">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-sign-in-alt"></i> Zaloguj/Zarejestruj
+            </button>
+            <div class="dropdown-menu" aria-labelledby="loginDropdown">
+                <a class="dropdown-item" th:href="@{/login}">Zaloguj się</a>
+                <a class="dropdown-item" th:href="@{/users/register}">Zarejestruj się</a>
+            </div>
         </div>
     </div>
 </header>
@@ -25,39 +28,49 @@
 <section class="container mt-3">
     <h2>Przykładowe sekcje</h2>
     <div class="row">
-        <!-- Wyświetlanie Kategorii podobnie jak Aukcje -->
-        <div class="col-md-4">
+        <!-- Sekcja Kategorii -->
+        <div class="col-sm-12 category-box">
             <h3>Kategorie</h3>
             <ul>
                 <li th:each="category : ${categories}">
-                    <a th:href="@{'/categories/' + ${category.id}}" th:text="${category.categoryName}"></a>
+                    <a th:href="@{'/categories/' + ${category.id}}">
+                        <i class="fas fa-folder"></i> <!-- Przykładowa ikona dla kategorii -->
+                        <span th:text="${category.categoryName}"></span>
+                    </a>
                 </li>
             </ul>
-            <!-- Zmienione odwołanie do strony dodawania kategorii -->
             <a th:href="@{/categories/add}" class="btn btn-info">Dodaj kategorie</a>
         </div>
-        <!-- Koniec sekcji Kategorii -->
 
-        <div class="col-md-4">
+        <!-- Sekcja Aukcji -->
+        <div class="col category-box">
             <h3>Aukcje</h3>
             <p>Przeglądaj wszystkie aukcje</p>
+            <i class="fas fa-gavel"></i> <!-- Przykładowa ikona dla aukcji -->
             <a th:href="@{/auctions}" class="btn btn-info">Przeglądaj aukcje</a>
         </div>
-        <div class="col-md-4">
+
+        <!-- Sekcja Licytacji -->
+        <div class="col category-box">
             <h3>Licytacje</h3>
             <p>Przeglądaj wszystkie licytacje</p>
+            <i class="fas fa-hand-holding-usd"></i> <!-- Przykładowa ikona dla licytacji -->
             <a th:href="@{/bids}" class="btn btn-info">Przeglądaj licytacje</a>
         </div>
-        <div class="col-md-4">
+
+        <!-- Sekcja Użytkowników -->
+        <div class="col category-box">
             <h3>Użytkownicy</h3>
             <p>Przeglądaj wszystkich użytkowników</p>
+            <i class="fas fa-users"></i> <!-- Przykładowa ikona dla użytkowników -->
             <a th:href="@{/users}" class="btn btn-info">Przeglądaj użytkowników</a>
         </div>
     </div>
 </section>
 
+
 <footer class="container mt-3">
-    <p>&copy; 2024 Aukcyjny Serwis</p>
+    <p>&copy; 2024 Serwis Aukcyjny</p>
 </footer>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
