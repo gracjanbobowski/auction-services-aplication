@@ -3,12 +3,15 @@ package com.example.auctionservicesaplication.service;
 
 import com.example.auctionservicesaplication.message.AuctionNotFoundException;
 import com.example.auctionservicesaplication.model.Auction;
+import com.example.auctionservicesaplication.model.Bid;
 import com.example.auctionservicesaplication.repository.AuctionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 //AuctionService: Logika biznesowa związana z aukcjami.
@@ -68,6 +71,16 @@ public class AuctionService {
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
 
         auctionRepository.delete(auctionToDelete);
+    }
+
+    public void addBidToAuction(Auction auction, Bid newBid) {
+        Set<Bid> bids = auction.getBids();
+        if (bids == null) {
+            bids = new HashSet<>();
+            auction.setBids(bids);
+        }
+        bids.add(newBid);
+        auctionRepository.save(auction);
     }
 }
 

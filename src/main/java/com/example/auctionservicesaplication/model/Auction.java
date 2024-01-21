@@ -6,6 +6,7 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 //Auction: Reprezentuje aukcję.
 
@@ -46,11 +47,18 @@ public class Auction {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Bid> bids;
+
     public Auction() {
         this.currentPrice = BigDecimal.ZERO;
     }
 
     public void setCurrentPrice(BigDecimal currentPrice) {
         this.currentPrice = currentPrice;
+    }
+
+    public Set<Bid> getBids() {
+        return bids;
     }
 }
