@@ -1,12 +1,13 @@
 package com.example.auctionservicesaplication.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-//Bid: Reprezentuje ofertę licytacyjną.
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,6 +28,9 @@ public class Bid {
     @JoinColumn(name = "user_id")
     private User bidder;
 
+    @Column(name = "bidAmount")
     private double bidAmount;
+
+    @Column(name = "bidTime")
     private LocalDateTime bidTime;
 }

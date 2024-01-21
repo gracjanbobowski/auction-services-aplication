@@ -7,6 +7,7 @@ import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.util.List;
 //UserController: Obsługuje żądania związane z użytkownikami.
 @Controller
 @RequestMapping("/users")
+@Validated
 public class UserController {
 
     private final UserService userService;
