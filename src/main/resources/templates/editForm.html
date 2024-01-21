@@ -1,70 +1,72 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Edit User</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>Edit User</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
+
 </head>
 <body>
+<header class="container mt-3">
+    <h1>Edycja użytkownika</h1>
+</header>
+<section class="container mt-3">
+    <form th:action="@{/users/{userId}/edit(userId=${user.id})}" th:object="${user}" method="post">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        <input type="hidden" name="userId" th:value="${user.id}"/>
 
-<div class="container mt-5">
-  <h1 class="mb-4">Edit User</h1>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" th:field="*{username}" required/>
+        </div>
 
-  <form th:action="@{/users/{userId}/edit(userId=${user.id})}" th:object="${user}" method="post">
-    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-    <input type="hidden" name="userId" th:value="${user.id}" />
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="text" class="form-control" id="email" th:field="*{email}" required/>
+        </div>
 
-    <div class="form-group">
-      <label for="username">Username:</label>
-      <input type="text" class="form-control" id="username" th:field="*{username}" required/>
-    </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" th:field="*{password}" required/>
+        </div>
 
-    <div class="form-group">
-      <label for="email">Email:</label>
-      <input type="text" class="form-control" id="email" th:field="*{email}" required/>
-    </div>
-
-    <div class="form-group">
-      <label for="password">Password:</label>
-      <input type="password" class="form-control" id="password" th:field="*{password}" required/>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-  </form>
-
-  <a href="#" class="btn btn-danger mt-3" th:href="@{/users/{userId}/delete(userId=${user.id})}">Delete User</a>
-  <a href="/users" class="btn btn-secondary mt-3">Cancel</a>
-</div>
+        <button type="submit" class="btn btn-success mt-2">Zapisz zmiany</button>
+    </form>
+</section>
+<section class="container mt-3">
+    <a href="/users" class="btn btn-primary mt-2">Powrót</a>
+</section>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-  $(document).ready(function () {
-    $("#editUserForm").submit(function (e) {
-      e.preventDefault();
-      var formData = $(this).serialize();
+    $(document).ready(function () {
+      $("#editUserForm").submit(function (e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
 
-      $.ajax({
-        type: "POST",
-        url: $(this).attr("action"),
-        data: formData,
-        success: function (response) {
-          console.log(response);
-          window.location.href = "/users";
-        },
-        error: function (error) {
-          console.error(error.responseText);
-        }
+        $.ajax({
+          type: "POST",
+          url: $(this).attr("action"),
+          data: formData,
+          success: function (response) {
+            console.log(response);
+            window.location.href = "/users";
+          },
+          error: function (error) {
+            console.error(error.responseText);
+          }
+        });
+      });
+
+      // Obsługa przycisku "Save Changes"
+      $("#saveChangesBtn").click(function () {
+        $("#editUserForm").submit();
       });
     });
-
-    // Obsługa przycisku "Save Changes"
-    $("#saveChangesBtn").click(function () {
-      $("#editUserForm").submit();
-    });
-  });
 </script>
 
 </body>

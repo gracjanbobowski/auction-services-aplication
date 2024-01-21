@@ -5,25 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Szczegóły Aukcji</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="container">
-<h2>Szczegóły Aukcji</h2>
-<div>
-    <p>ID: <span th:text="${auction.id}"></span></p>
-    <p>Tytuł: <span th:text="${auction.title}"></span></p>
-    <p>Opis: <span th:text="${auction.description}"></span></p>
-    <p>Sprzedawca: <span th:text="${auction.seller?.username}"></span></p>
-    <p>Kategoria: <span th:text="${auction.category.categoryName}"></span></p>
-    <p>Cena początkowa: <span th:text="${auction.startingPrice}"></span></p>
-    <p>Aktualna cena: <span th:text="${auction.currentPrice}"></span></p>
-    <p>Czas rozpoczęcia: <span th:text="${auction.startTime}"></span></p>
-    <p>Czas zakończenia: <span th:text="${auction.endTime}"></span></p>
-    <!-- Dodaj inne pola danych według potrzeb -->
+<body>
+<header class="container mt-3">
+    <h1>Szczegóły aukcji</h1>
+</header>
+<section class="container mt-3">
+    <div>
+        <div class="row">
+            <div class="col-md-6">
+                <p class="font-weight-bold">ID:</p>
+                <p th:text="${auction.id}"></p>
 
-    <!-- Dodaj linki do innych stron (np. edycji) jeśli są potrzebne -->
-    <a th:href="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}" class="btn btn-warning">Edytuj aukcję</a>
-    <a th:href="@{/auctions}" class="btn btn-primary">Powrót do listy aukcji</a>
-</div>
+                <p class="font-weight-bold">Tytuł:</p>
+                <p th:text="${auction.title}"></p>
+
+                <p class="font-weight-bold">Opis:</p>
+                <p th:text="${auction.description}"></p>
+
+                <p class="font-weight-bold">Sprzedawca:</p>
+                <p th:text="${auction.seller?.username}"></p>
+            </div>
+
+            <div class="col-md-6">
+                <p class="font-weight-bold">Kategoria:</p>
+                <p th:text="${auction.category.categoryName}"></p>
+
+                <p class="font-weight-bold">Cena początkowa:</p>
+                <p th:text="${auction.startingPrice}"></p>
+
+                <p class="font-weight-bold">Aktualna cena:</p>
+                <p th:text="${auction.currentPrice}"></p>
+
+                <p class="font-weight-bold">Czas rozpoczęcia:</p>
+                <p th:text="${auction.startTime}"></p>
+
+                <p class="font-weight-bold">Czas zakończenia:</p>
+                <p th:text="${auction.endTime}"></p>
+            </div>
+        </div>
+
+    </div>
+</section>
+<section class="container mt-3">
+    <a th:href="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}" class="btn btn-warning">Edytuj</a>
+    <a th:href="@{/auctions}" class="btn btn-primary">Powrót</a>
+</section>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
