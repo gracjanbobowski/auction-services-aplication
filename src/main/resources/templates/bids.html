@@ -5,35 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista Ofert</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="container">
-<h2>Lista Ofert</h2>
-
-<table class="table">
-    <thead>
-    <tr>
-        <th>ID Aukcji</th>
-        <th>Tytuł</th>
-        <th>Opis</th>
-        <th>Czas Rozpoczęcia</th>
-        <th>Czas Zakończenia</th>
-        <th>Akcja</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="auction : ${auctions}">
-        <td th:text="${auction.id}"></td>
-        <td th:text="${auction.title}"></td>
-        <td th:text="${auction.description}"></td>
-        <td th:text="${auction.startTime}"></td>
-        <td th:text="${auction.endTime}"></td>
-        <!-- Zaktualizowana linia akcji -->
-        <td>
-            <a th:href="@{'/bids/' + auction.id + '/details/placeBid'}" class="btn btn-info">Złóż Ofertę</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<body>
+<header class="container mt-3">
+    <h1>Lista ofert</h1>
+</header>
+<section class="container mt-3">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID Aukcji</th>
+            <th>Tytuł</th>
+            <th>Opis</th>
+            <th>Czas Rozpoczęcia</th>
+            <th>Czas Zakończenia</th>
+            <th>Akcja</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="auction : ${auctions}">
+            <td th:text="${auction.id}"></td>
+            <td th:text="${auction.title}"></td>
+            <td th:text="${auction.description}"></td>
+            <td th:text="${auction.startTime}"></td>
+            <td th:text="${auction.endTime}"></td>
+            <!-- Zaktualizowana linia akcji -->
+            <td>
+                <a th:href="@{'/bids/' + auction.id + '/details/placeBid'}" class="btn btn-info">Złóż Ofertę</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+<section class="container mt-3">
+    <a th:href="@{/}" class="btn btn-primary">Powrót</a>
+</section>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
