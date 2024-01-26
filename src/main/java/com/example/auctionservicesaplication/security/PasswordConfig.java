@@ -29,20 +29,20 @@ public class PasswordConfig {
 //        return new BCryptPasswordEncoder(16);
 //    }
 
-//    @Bean
-//    public UserDetailsManager userDetailsManager(DataSource dataSource) {
-//        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-//        jdbcUserDetailsManager.setUsersByUsernameQuery(
-//                "select username, password, true from users where username = ?");
-//        jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
-//                "select username, authority from authorities where username = ?");
-//        return jdbcUserDetailsManager;
-//    }
+    @Bean
+    public UserDetailsManager userDetailsManager(DataSource dataSource) {
+        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+        jdbcUserDetailsManager.setUsersByUsernameQuery(
+                "select username, password, true from users where username = ?");
+        jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
+                "select username, authority from authorities where username = ?");
+        return jdbcUserDetailsManager;
+    }
 
     @Bean
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/home")
+                .securityMatcher("/userhome")
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().hasRole("ADMIN")
                 )

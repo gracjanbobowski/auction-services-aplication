@@ -24,15 +24,8 @@ public class EmailService {
         sendEmail(to, subject, body);
     }
 
-    public void sendBidConfirmation(String to, String username, String auctionTitle) {
-        String subject = "Potwierdzenie licytacji";
-        String body = "Cześć " + username + "!\n" +
-                "Dziękujemy za złożenie oferty licytacyjnej na aukcję o tytule: " + auctionTitle + ".\n" +
-                "Życzymy powodzenia!";
-        sendEmail(to, subject, body);
-    }
-
-    private void sendEmail(String to, String subject, String body) {
+    // Change private to public or default (package-private)
+    public void sendEmail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);

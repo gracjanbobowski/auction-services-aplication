@@ -32,7 +32,7 @@
             <td th:text="${auction.endTime}"></td>
             <!-- Zaktualizowana linia akcji -->
             <td>
-                <a th:href="@{'/bids/' + auction.id + '/details/placeBid'}" class="btn btn-info">Złóż Ofertę</a>
+                <a th:href="@{'/bids/' + ${auction.id} + '/details/placeBid'}" class="btn btn-info">Złóż Ofertę</a>
             </td>
         </tr>
         </tbody>

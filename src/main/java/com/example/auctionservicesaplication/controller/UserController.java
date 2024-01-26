@@ -1,16 +1,27 @@
 package com.example.auctionservicesaplication.controller;
 
+import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
+import com.example.auctionservicesaplication.repository.RoleRepository;
 import com.example.auctionservicesaplication.repository.UserRepository;
 import com.example.auctionservicesaplication.service.EmailService;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -23,44 +34,100 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
+    private final UserDetailsManager userDetailsManager;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository, EmailService emailService) {
+    public UserController(UserService userService, UserRepository userRepository,
+                          EmailService emailService, PasswordEncoder passwordEncoder,
+                          UserDetailsManager userDetailsManager, RoleRepository roleRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
+        this.userDetailsManager = userDetailsManager;
+        this.roleRepository = roleRepository;
     }
 
     // Endpoint do wyświetlania listy wszystkich użytkowników
     @GetMapping
-    public String getAllUsers(Model model) {
+    public String getAllUsers(Model model, Principal principal) {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
-        return "userList"; // Załóżmy, że mamy plik HTML o nazwie "userList.html" do wyświetlenia listy użytkowników
+
+        // Dodaj informację o zalogowanym użytkowniku
+        if (principal != null) {
+            model.addAttribute("loggedInUser", principal.getName());
+        }
+
+        return "userList";
+    }
+
+    // Endpoint to get information about the currently logged-in user
+    @GetMapping("/loggedInUser")
+    @ResponseBody
+    public String getLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() instanceof String) {
+            // No user is authenticated
+            return "Not logged in";
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userDetails.getUsername();
     }
 
     // Endpoint do wyświetlania szczegółów danego użytkownika
     @GetMapping("/{userId}")
-    public String getUserDetails(@PathVariable String userId, Model model) {
-        Long userIdLong = Long.parseLong(userId);
-        User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
+    public String getUserDetails(@PathVariable Long userId, Model model, Principal principal) {
+        User user = userService.getUserById(BigDecimal.valueOf(userId));
         model.addAttribute("user", user);
-        return "userDetails"; // Załóżmy, że mamy plik HTML o nazwie "userDetails.html" do wyświetlenia szczegółów użytkownika
+
+        // Dodaj informację o zalogowanym użytkowniku
+        if (principal != null) {
+            model.addAttribute("loggedInUser", principal.getName());
+        }
+
+        return "userDetails";
     }
 
     // Endpoint do wyświetlania formularza rejestracyjnego
     @GetMapping("/register")
     public String getRegistrationForm(Model model) {
         model.addAttribute("user", new User());
-        return "registrationForm"; // Załóżmy, że mamy plik HTML o nazwie "registrationForm.html" z formularzem rejestracyjnym
+        return "registrationForm";
     }
 
-    // Endpoint obsługujący przesyłanie danych z formularza rejestracyjnego
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute User user) {
+    public String registerUser(@ModelAttribute @Valid User user, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "Coś poszło nie tak. Spróbuj ponownie.");
+            return "registrationForm";
+        }
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            bindingResult.rejectValue("username", "error.user", "Username already exists");
+            return "registrationForm";
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.registerUser(user);
+
+        UserDetails userDetails = userDetailsManager.loadUserByUsername(user.getUsername());
+        userDetailsManager.createUser(userDetails);
+
         emailService.sendRegistrationConfirmation(user.getEmail(), user.getUsername());
-        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej rejestracji
+
+        // Przypisz rolę admina (ROLE_ADMIN) dla określonego warunku
+        if (user.isAdmin()) {
+            userService.assignAdminRole(user);
+        }
+
+        // Dodaj komunikat potwierdzający rejestrację
+        model.addAttribute("success", true);
+
+        return "redirect:/users";
     }
 
     // Endpoint do wyświetlania formularza edycji użytkownika
@@ -87,6 +154,33 @@ public class UserController {
         userService.deleteUser(BigDecimal.valueOf(userIdLong));
         return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym usunięciu
     }
+
+    @PostMapping("/{userId}/assignRole")
+    public String assignRoleToUser(@PathVariable String userId, @RequestParam String roleName) {
+        Long userIdLong = Long.parseLong(userId);
+        User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
+
+        // Sprawdź, czy rola o podanej nazwie istnieje
+        Role role = roleRepository.findByName(roleName);
+        if (role == null) {
+            // Jeśli nie istnieje, utwórz nową rolę i zapisz ją do bazy danych
+            role = new Role(roleName);
+            roleRepository.save(role);
+        }
+
+        // Sprawdź, czy użytkownik nie ma już przypisanej tej roli
+        if (!user.getRoles().contains(role)) {
+            // Przypisz rolę do użytkownika
+            user.getRoles().add(role);
+
+            // Zapisz użytkownika do bazy danych
+            userRepository.save(user);
+        }
+
+        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym przypisaniu roli
+    }
+
+
 }
 
 // fixMe : Byłem tu :)
