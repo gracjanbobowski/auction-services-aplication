@@ -33,6 +33,9 @@ public class UserService {
 
     public void registerUser(User user) {
         // Dodaj logikę walidacji i przetwarzania danych rejestracyjnych
+        if (user == null) {
+            throw new IllegalArgumentException("Cannot register a null user");
+        }
         userRepository.save(user);
     }
 

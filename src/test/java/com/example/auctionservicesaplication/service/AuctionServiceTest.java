@@ -28,8 +28,9 @@ public class AuctionServiceTest {
     @InjectMocks
     private AuctionService auctionService;
 
+    // Test 1: getAllAuctions() - Tests that all auctions are retrieved.
     @Test
-    public void whenGetAllAuctionCalled_thenRetrieveAuctions() {
+    public void getAllAuctions_retrievesAllAuctions() {
         // Arrange
         List<Auction> expectedAuctions = new ArrayList<>();
         expectedAuctions.add(new Auction()); // Add mock Auctions as needed
@@ -42,8 +43,9 @@ public class AuctionServiceTest {
         assertEquals(expectedAuctions, actualAuctions, "The returned auctions should match the expected ones");
     }
 
+    // Test 2: getAuctionById() - Tests retrieving a specific auction by its ID.
     @Test
-    void whenValidId_thenAuctionShouldBeFound() {
+    void getAuctionById_withValidId_retrievesCorrectAuction() {
         BigDecimal id = BigDecimal.valueOf(1);
         Auction expectedAuction = new Auction();
         expectedAuction.setId(id);
@@ -54,8 +56,9 @@ public class AuctionServiceTest {
         assertEquals(expectedAuction, actualAuction, "The auction should be found with the correct ID");
     }
 
+    // Test 3: getAuctionById() - Tests the response when an invalid ID is used.
     @Test
-    void whenInvalidId_thenThrowException() {
+    void getAuctionById_withInvalidId_throwsException() {
         BigDecimal id = BigDecimal.valueOf(2);
         when(auctionRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -63,9 +66,9 @@ public class AuctionServiceTest {
                 "An AuctionNotFoundException should be thrown if the auction is not found");
     }
 
+    // Test 4: createAuction() - Tests creating a new auction with valid data.
     @Test
-    void whenCreateAuctionWithValidData_thenAuctionShouldBeSaved() {
-        // Arrange
+    void createAuction_withValidData_savesAuction() {
         Auction newAuction = new Auction();
         newAuction.setTitle("Artwork");
         newAuction.setDescription("Beautiful artwork");
@@ -76,19 +79,17 @@ public class AuctionServiceTest {
         newAuction.setCategory(artCategory);
         when(auctionRepository.save(any(Auction.class))).thenReturn(newAuction);
 
-        // Act
         Auction savedAuction = auctionService.createAuction(newAuction);
 
-        // Assert
         assertNotNull(savedAuction);
         assertEquals(artCategory, savedAuction.getCategory());
         assertEquals("Artwork", savedAuction.getTitle());
         assertEquals(new BigDecimal("100.00"), savedAuction.getStartingPrice());
     }
 
+    // Test 5: createAuction() - Tests creating an auction with a null category.
     @Test
-    void whenCreateAuctionWithNullCategory_thenThrowException() {
-        // Arrange
+    void createAuction_withNullCategory_throwsException() {
         Auction newAuction = new Auction();
         newAuction.setTitle("Artwork");
         newAuction.setDescription("Beautiful artwork");
@@ -96,13 +97,13 @@ public class AuctionServiceTest {
         newAuction.setCurrentPrice(new BigDecimal("100.00"));
         newAuction.setCategory(null);
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> auctionService.createAuction(newAuction),
                 "Creating an auction with a null category should throw IllegalArgumentException");
     }
 
+    // Test 6: editAuction() - Tests editing an auction with valid data.
     @Test
-    void whenValidId_thenAuctionShouldBeUpdated() {
+    void editAuction_withValidData_updatesAuction() {
         BigDecimal id = new BigDecimal("1");
         Auction existingAuction = new Auction();
         existingAuction.setId(id);
@@ -134,9 +135,9 @@ public class AuctionServiceTest {
         assertNotNull(savedAuction.getEndTime());
     }
 
-
+    // Test 7: editAuction() - Tests updating the category of an auction.
     @Test
-    void whenValidIdAndNewCategory_thenAuctionCategoryShouldBeUpdated() {
+    void editAuction_withNewCategory_updatesCategory() {
         BigDecimal id = new BigDecimal("1");
         Auction existingAuction = new Auction();
         existingAuction.setId(id);
@@ -163,8 +164,9 @@ public class AuctionServiceTest {
         assertEquals("New Category", savedAuction.getCategory().getCategoryName());
     }
 
+    // Test 8: editAuction() - Tests handling an invalid ID during auction edit.
     @Test
-    void whenInvalidId_thenThrowExceptionOnEdit() {
+    void editAuction_withInvalidId_throwsNotFoundException() {
         BigDecimal id = new BigDecimal("2");
         when(auctionRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -172,8 +174,9 @@ public class AuctionServiceTest {
                 "An AuctionNotFoundException should be thrown if the auction is not found");
     }
 
+    // Test 9: editAuction() - Tests persistence of unchanged fields during an auction edit.
     @Test
-    void whenAuctionIsEdited_unchangedFieldsShouldPersist() {
+    void editAuction_unchangedFieldsShouldPersist() {
         BigDecimal id = new BigDecimal("1");
         Auction existingAuction = new Auction();
         existingAuction.setId(id);
@@ -200,5 +203,51 @@ public class AuctionServiceTest {
         assertEquals(originalBids, savedAuction.getBids());  // Bids should remain the same
     }
 
+    // Test 10: deleteAuction() - Tests successful deletion of an auction.
+    @Test
+    void deleteAuction_withValidId_deletesAuction() {
+        BigDecimal id = new BigDecimal("1");
+        Auction auctionToDelete = new Auction();
+        auctionToDelete.setId(id);
 
+        when(auctionRepository.findById(id)).thenReturn(Optional.of(auctionToDelete));
+
+        auctionService.deleteAuction(id);
+
+        verify(auctionRepository).delete(auctionToDelete);
+    }
+
+    // Test 11: deleteAuction() - Tests handling an invalid ID during auction deletion.
+    @Test
+    void deleteAuction_withInvalidId_throwsNotFoundException() {
+        BigDecimal id = new BigDecimal("2");
+
+        when(auctionRepository.findById(id)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(AuctionNotFoundException.class, () -> {
+            auctionService.deleteAuction(id);
+        });
+
+        String expectedMessage = "Auction not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    // Test 12: addBidToAuction() - Tests adding a bid to an auction.
+    @Test
+    void addBidToAuction_addsBidToAuction() {
+        Auction auction = new Auction();
+        auction.setId(new BigDecimal("1")); // Ensure the auction has an ID
+        auction.setBids(new HashSet<>()); // Initialize the bids set
+
+        Bid bid = new Bid();
+        bid.setBidAmount(100.0);
+        bid.setBidTime(LocalDateTime.now());
+
+        auctionService.addBidToAuction(auction, bid);
+
+        assertTrue(auction.getBids().contains(bid), "The bid should be added to the auction's bids set");
+        verify(auctionRepository).save(auction);
+    }
 }

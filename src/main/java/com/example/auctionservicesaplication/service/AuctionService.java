@@ -48,23 +48,32 @@ public class AuctionService {
         Auction existingAuction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
 
+        // Only update if it's not null in the editedAuction
         if (editedAuction.getCategory() != null) {
             existingAuction.setCategory(editedAuction.getCategory());
         }
-
-        existingAuction.setTitle(editedAuction.getTitle());
-        existingAuction.setDescription(editedAuction.getDescription());
-        existingAuction.setStartingPrice(editedAuction.getStartingPrice());
-
+        if (editedAuction.getTitle() != null) {
+            existingAuction.setTitle(editedAuction.getTitle());
+        }
+        if (editedAuction.getDescription() != null) {
+            existingAuction.setDescription(editedAuction.getDescription());
+        }
+        if (editedAuction.getStartingPrice() != null) {
+            existingAuction.setStartingPrice(editedAuction.getStartingPrice());
+        }
         if (editedAuction.getCurrentPrice() != null) {
             existingAuction.setCurrentPrice(editedAuction.getCurrentPrice());
         }
-
-        existingAuction.setStartTime(editedAuction.getStartTime());
-        existingAuction.setEndTime(editedAuction.getEndTime());
+        if (editedAuction.getStartTime() != null) {
+            existingAuction.setStartTime(editedAuction.getStartTime());
+        }
+        if (editedAuction.getEndTime() != null) {
+            existingAuction.setEndTime(editedAuction.getEndTime());
+        }
 
         auctionRepository.save(existingAuction);
     }
+
 
     public void deleteAuction(BigDecimal auctionId) {
         Auction auctionToDelete = auctionRepository.findById(auctionId)
