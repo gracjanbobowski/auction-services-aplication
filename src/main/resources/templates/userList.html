@@ -10,8 +10,8 @@
 
 <div class="container mt-5">
     <!-- Dodaj poniższy fragment w miejscu, gdzie chcesz wyświetlić informację o zalogowanym użytkowniku -->
-    <div th:if="${loggedInUser != null}">
-        <p>Zalogowany użytkownik: <span th:text="${loggedInUser}"></span></p>
+    <div th:if="${userLoggedInUser != null}">
+        <p>Zalogowany użytkownik: <span th:text="${userLoggedInUser}"></span></p>
     </div>
 
     <h1>User List</h1>

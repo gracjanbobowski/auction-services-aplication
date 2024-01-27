@@ -10,6 +10,7 @@ import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +43,9 @@ public class AuctionController {
         return "auctions";
     }
 
-
     @GetMapping("/{auctionId}")
-    public String getAuctionDetails(@PathVariable Long auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(BigDecimal.valueOf(auctionId));
+    public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
+        Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
         return "auctionDetails";
     }
@@ -58,17 +58,26 @@ public class AuctionController {
         return "createdForm"; // Corrected template name
     }
     @PostMapping("/create")
-    public String createAuction(@ModelAttribute Auction auction, Model model) {
-        // Pobierz informacje o zalogowanym użytkowniku
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User loggedInUser = (User) authentication.getPrincipal();
+    public String createAuction(@ModelAttribute Auction auction, Model model, Authentication authentication) {
+        // Sprawdź, czy użytkownik jest zalogowany
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String loggedInUsername = userDetails.getUsername();
 
-        auctionService.createAuction(auction, loggedInUser);
+            // Pobierz obiekt User na podstawie nazwy użytkownika
+            User loggedInUser = userService.getUserByUsername(loggedInUsername);
 
-        // Dodaj informacje o zalogowanym użytkowniku do modelu
-        model.addAttribute("loggedInUser", loggedInUser);
+            // Utwórz aukcję, przekazując obiekt User
+            auctionService.createAuction(auction, loggedInUser);
 
-        return "redirect:/auctions";
+            // Dodaj informacje o zalogowanym użytkowniku do modelu
+            model.addAttribute("loggedInUser", loggedInUsername);
+
+            return "redirect:/auctions";
+        } else {
+            // Obsłuż przypadki, gdy użytkownik nie jest zalogowany
+            return "redirect:/login"; // Przekieruj na stronę logowania lub obsłuż inaczej
+        }
     }
 
     @GetMapping("/{auctionId}/edit")

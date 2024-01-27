@@ -1,6 +1,8 @@
 -- TRUNCATE TABLE users;
 
-    INSERT INTO users (user_id, username, email, password, enabled) VALUES
+DELETE FROM users;
+
+INSERT INTO users (user_id, username, email, password, enabled) VALUES
                                                                     (1, 'a', 'a', 'a', 0),
                                                                     (2, 'admin', 'admin', '$2a$12$EYK.8IPJ.LGSzQzzbI4XYudHTuxuTziJEdKiViuzvz5pNouGCixly', 1),
                                                                     (3, 'aq', 'q', 'aq', 1),
