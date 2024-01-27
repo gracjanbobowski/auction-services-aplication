@@ -58,12 +58,23 @@ public class UserController {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
 
-        // Dodaj informację o zalogowanym użytkowniku
         if (principal != null) {
-            model.addAttribute("loggedInUser", principal.getName());
+            model.addAttribute("userLoggedInUser", principal.getName());  // Zmieniono nazwę atrybutu
         }
 
-        return "userList";
+        return "userList"; // Sprawdź, czy plik HTML to "userList.html"
+    }
+
+    @GetMapping("/home")
+    @Secured("ROLE_ADMIN")
+    public String home(Model model, Principal principal) {
+        if (principal != null) {
+            model.addAttribute("userLoggedInUser", principal.getName());  // Zmieniono nazwę atrybutu
+        }
+
+        // Reszta kodu obsługującego stronę główną
+
+        return "home"; // Sprawdź, czy plik HTML to "home.html"
     }
 
     // Endpoint to get information about the currently logged-in user
