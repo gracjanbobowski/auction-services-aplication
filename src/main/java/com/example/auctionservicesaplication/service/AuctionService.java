@@ -45,6 +45,7 @@ public class AuctionService {
         auction.setSeller(seller); // Ustaw informacje o sprzedawcy
         return auctionRepository.save(auction);
     }
+
     public BigDecimal getHighestBidAmount(Auction auction) {
         List<Bid> bids = bidService.getBidsByAuction(auction);
         return bids.stream()

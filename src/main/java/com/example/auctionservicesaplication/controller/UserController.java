@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 //UserController: Obsługuje żądania związane z użytkownikami.
@@ -51,55 +52,19 @@ public class UserController {
         this.roleRepository = roleRepository;
     }
 
-    // Endpoint do wyświetlania listy wszystkich użytkowników
     @GetMapping
-    @Secured("ROLE_ADMIN")
-    public String getAllUsers(Model model, Principal principal) {
+    public String getAllUsers(Model model) {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
-
-        if (principal != null) {
-            model.addAttribute("userLoggedInUser", principal.getName());  // Zmieniono nazwę atrybutu
-        }
-
-        return "userList"; // Sprawdź, czy plik HTML to "userList.html"
+        return "userList";
     }
 
-    @GetMapping("/home")
+    @GetMapping("/{userId}/details")
     @Secured("ROLE_ADMIN")
-    public String home(Model model, Principal principal) {
-        if (principal != null) {
-            model.addAttribute("userLoggedInUser", principal.getName());  // Zmieniono nazwę atrybutu
-        }
-
-        // Reszta kodu obsługującego stronę główną
-
-        return "home"; // Sprawdź, czy plik HTML to "home.html"
-    }
-
-    // Endpoint to get information about the currently logged-in user
-    @GetMapping("/loggedInUser")
-    @ResponseBody
-    @Secured("ROLE_ADMIN")
-    public String getLoggedInUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() instanceof String) {
-            // No user is authenticated
-            return "Not logged in";
-        }
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userDetails.getUsername();
-    }
-
-    // Endpoint do wyświetlania szczegółów danego użytkownika
-    @GetMapping("/{userId}")
-    @Secured("ROLE_ADMIN")
-    public String getUserDetails(@PathVariable Long userId, Model model, Principal principal) {
-        User user = userService.getUserById(BigDecimal.valueOf(userId));
+    public String getUserDetails(@PathVariable BigDecimal userId, Model model, Principal principal) {
+        User user = userService.getUserById(userId);
         model.addAttribute("user", user);
 
-        // Dodaj informację o zalogowanym użytkowniku
         if (principal != null) {
             model.addAttribute("loggedInUser", principal.getName());
         }
@@ -107,7 +72,44 @@ public class UserController {
         return "userDetails";
     }
 
-    // Endpoint do wyświetlania formularza rejestracyjnego
+    @GetMapping("/home")
+    @Secured("ROLE_USER")
+    public String home(Model model, Principal principal) {
+        if (principal != null) {
+            model.addAttribute("loggedInUser", principal.getName());
+        }
+
+        // Reszta kodu obsługującego stronę główną
+
+        return "home";
+    }
+
+    @GetMapping("/loggedInUser")
+    @ResponseBody
+    @Secured("ROLE_ADMIN")
+    public String getLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() instanceof String) {
+            return "Not logged in";
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userDetails.getUsername();
+    }
+
+    @GetMapping("/{userId}")
+    @Secured("ROLE_ADMIN")
+    public String getUserDetails(@PathVariable Long userId, Model model, Principal principal) {
+        User user = userService.getUserById(BigDecimal.valueOf(userId));
+        model.addAttribute("user", user);
+
+        if (principal != null) {
+            model.addAttribute("loggedInUser", principal.getName());
+        }
+
+        return "userDetails";
+    }
+
     @GetMapping("/register")
     @Secured("ROLE_ADMIN")
     public String getRegistrationForm(Model model) {
@@ -119,11 +121,14 @@ public class UserController {
     @Secured("ROLE_ADMIN")
     public String registerUser(@ModelAttribute @Valid User user, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Coś poszło nie tak. Spróbuj ponownie.");
+            model.addAttribute("error", "Something went wrong. Please try again.");
             return "registrationForm";
         }
 
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
+
+        if (existingUser.isPresent()) {
+            // Obsługa sytuacji, gdy istnieje już użytkownik o tej nazwie
             bindingResult.rejectValue("username", "error.user", "Username already exists");
             return "registrationForm";
         }
@@ -136,73 +141,59 @@ public class UserController {
 
         emailService.sendRegistrationConfirmation(user.getEmail(), user.getUsername());
 
-        // Przypisz rolę admina (ROLE_ADMIN) dla określonego warunku
         if (user.isAdmin()) {
             userService.assignAdminRole(user);
         }
 
-        // Dodaj komunikat potwierdzający rejestrację
         model.addAttribute("success", true);
-        model.addAttribute("loggedInUser", user.getUsername()); // Dodaj zalogowanego użytkownika
+        model.addAttribute("loggedInUser", user.getUsername());
 
-        return "registrationForm";
+        return "redirect:/users";
     }
 
-    // Endpoint do wyświetlania formularza edycji użytkownika
     @GetMapping("/{userId}/edit")
     @Secured("ROLE_ADMIN")
     public String getEditForm(@PathVariable String userId, Model model) {
         Long userIdLong = Long.parseLong(userId);
         User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
         model.addAttribute("user", user);
-        return "editForm"; // Załóżmy, że mamy plik HTML o nazwie "editForm.html" z formularzem edycji użytkownika
+        return "editForm";
     }
 
-    // Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
     @PostMapping("/{userId}/edit")
     @Secured("ROLE_ADMIN")
     public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
         Long userIdLong = Long.parseLong(userId);
         userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
-        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanej edycji
+        return "redirect:/users";
     }
 
-    // Endpoint do usuwania użytkownika
     @GetMapping("/{userId}/delete")
     @Secured("ROLE_ADMIN")
     public String deleteUser(@PathVariable String userId) {
         Long userIdLong = Long.parseLong(userId);
         userService.deleteUser(BigDecimal.valueOf(userIdLong));
-        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym usunięciu
+        return "redirect:/users";
     }
 
     @PostMapping("/{userId}/assignRole")
     @Secured("ROLE_ADMIN")
-    public String assignRoleToUser(@PathVariable String userId, @RequestParam String roleName) {
-        Long userIdLong = Long.parseLong(userId);
-        User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
+    public String assignRoleToUser(@PathVariable BigDecimal userId, @RequestParam String roleName) {
+        User user = userService.getUserById(userId);
 
-        // Sprawdź, czy rola o podanej nazwie istnieje
         Role role = roleRepository.findByName(roleName);
         if (role == null) {
-            // Jeśli nie istnieje, utwórz nową rolę i zapisz ją do bazy danych
             role = new Role(roleName);
             roleRepository.save(role);
         }
 
-        // Sprawdź, czy użytkownik nie ma już przypisanej tej roli
         if (!user.getRoles().contains(role)) {
-            // Przypisz rolę do użytkownika
             user.getRoles().add(role);
-
-            // Zapisz użytkownika do bazy danych
             userRepository.save(user);
         }
 
-        return "redirect:/users"; // Przekierowanie do listy użytkowników po udanym przypisaniu roli
+        return "redirect:/users";
     }
-
-
 }
 
 // fixMe : Byłem tu :)
