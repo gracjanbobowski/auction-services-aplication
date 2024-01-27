@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,40 +21,29 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
-//@EnableMethodSecurity(securedEnabled = true) // jak byście chcieli nad metodani pisać jakie są dostępy to trzeba to włączyć
+@EnableMethodSecurity(securedEnabled = true) // jak byście chcieli nad metodani pisać jakie są dostępy to trzeba to włączyć
 public class SecurityConfig {
 
-    private final DataSource dataSource;
-
-    @Autowired
-    public SecurityConfig(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-
+//    private final DataSource dataSource;
+//
+//    @Autowired
+//    public SecurityConfig(DataSource dataSource) {
+//        this.dataSource = dataSource;
+//    }
+//
 //    @Bean
-//    public DataSource dataSource() {
-//        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-//        dataSource.setUrl("your_database_url");
-//        dataSource.setUsername("your_database_username");
-//        dataSource.setPassword("your_database_password");
-//        dataSource.setDriverClassName("your_database_driver_class");
-//        return dataSource;
+//    UserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+//        return new JdbcUserDetailsManager(dataSource);
 //    }
 
-    @Bean
-    UserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
-        return new JdbcUserDetailsManager(dataSource);
-    }
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // Konfiguracja użytkowników
-        auth.inMemoryAuthentication()
-                .withUser("admin").password("{noop}admin").roles("ADMIN")
-                .and()
-                .withUser("user").password("{noop}user").roles("USER");
-    }
+//    @Autowired
+//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+//        // Konfiguracja użytkowników
+//        auth.inMemoryAuthentication()
+//                .withUser("admin").password("{noop}admin").roles("ADMIN")
+//                .and()
+//                .withUser("user").password("{noop}user").roles("USER");
+//    }
 
 
     @Bean
@@ -62,26 +52,26 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/home").hasAnyAuthority("ROLE_ADMIN")
+//                        .requestMatchers("/home", "/user/**").hasAnyAuthority("ADMIN")
                         .requestMatchers("/**").hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers("*").hasAnyAuthority("ROLE_ADMIN")
 //                        .requestMatchers("/user/**").hasAnyAuthority("ROLE_USER")
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
-                )
-                .formLogin(login -> login
-                        .loginPage("/login") // Dodaj własną stronę logowania
-                        .defaultSuccessUrl("/")
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/"));
+                );
+//                .formLogin(login -> login
+//                        .loginPage("/login") // Dodaj własną stronę logowania
+//                        .defaultSuccessUrl("/")
+//                        .permitAll())
+//                .logout(logout -> logout
+//                        .logoutSuccessUrl("/"));
 
         return httpSecurity.build();
     }
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+//    }
 }
 
 //    @Bean

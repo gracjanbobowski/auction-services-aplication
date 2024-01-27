@@ -54,7 +54,6 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    // Dodaj tę metodę do klasy User
     public boolean isAdmin() {
         return roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
     }

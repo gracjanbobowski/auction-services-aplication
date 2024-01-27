@@ -7,6 +7,7 @@ import com.example.auctionservicesaplication.repository.UserRepository;
 import com.example.auctionservicesaplication.service.EmailService;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -52,6 +53,7 @@ public class UserController {
 
     // Endpoint do wyświetlania listy wszystkich użytkowników
     @GetMapping
+    @Secured("ROLE_ADMIN")
     public String getAllUsers(Model model, Principal principal) {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
@@ -67,6 +69,7 @@ public class UserController {
     // Endpoint to get information about the currently logged-in user
     @GetMapping("/loggedInUser")
     @ResponseBody
+    @Secured("ROLE_ADMIN")
     public String getLoggedInUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getPrincipal() instanceof String) {
@@ -80,6 +83,7 @@ public class UserController {
 
     // Endpoint do wyświetlania szczegółów danego użytkownika
     @GetMapping("/{userId}")
+    @Secured("ROLE_ADMIN")
     public String getUserDetails(@PathVariable Long userId, Model model, Principal principal) {
         User user = userService.getUserById(BigDecimal.valueOf(userId));
         model.addAttribute("user", user);
@@ -94,12 +98,14 @@ public class UserController {
 
     // Endpoint do wyświetlania formularza rejestracyjnego
     @GetMapping("/register")
+    @Secured("ROLE_ADMIN")
     public String getRegistrationForm(Model model) {
         model.addAttribute("user", new User());
         return "registrationForm";
     }
 
     @PostMapping("/register")
+    @Secured("ROLE_ADMIN")
     public String registerUser(@ModelAttribute @Valid User user, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("error", "Coś poszło nie tak. Spróbuj ponownie.");
@@ -126,12 +132,14 @@ public class UserController {
 
         // Dodaj komunikat potwierdzający rejestrację
         model.addAttribute("success", true);
+        model.addAttribute("loggedInUser", user.getUsername()); // Dodaj zalogowanego użytkownika
 
-        return "redirect:/users";
+        return "registrationForm";
     }
 
     // Endpoint do wyświetlania formularza edycji użytkownika
     @GetMapping("/{userId}/edit")
+    @Secured("ROLE_ADMIN")
     public String getEditForm(@PathVariable String userId, Model model) {
         Long userIdLong = Long.parseLong(userId);
         User user = userService.getUserById(BigDecimal.valueOf(userIdLong));
@@ -141,6 +149,7 @@ public class UserController {
 
     // Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika
     @PostMapping("/{userId}/edit")
+    @Secured("ROLE_ADMIN")
     public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
         Long userIdLong = Long.parseLong(userId);
         userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
@@ -149,6 +158,7 @@ public class UserController {
 
     // Endpoint do usuwania użytkownika
     @GetMapping("/{userId}/delete")
+    @Secured("ROLE_ADMIN")
     public String deleteUser(@PathVariable String userId) {
         Long userIdLong = Long.parseLong(userId);
         userService.deleteUser(BigDecimal.valueOf(userIdLong));
@@ -156,6 +166,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/assignRole")
+    @Secured("ROLE_ADMIN")
     public String assignRoleToUser(@PathVariable String userId, @RequestParam String roleName) {
         Long userIdLong = Long.parseLong(userId);
         User user = userService.getUserById(BigDecimal.valueOf(userIdLong));

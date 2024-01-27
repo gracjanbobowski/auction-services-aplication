@@ -136,18 +136,3 @@ public class UserService {
         );
     }
 }
-
-//    W powyższym kodzie:
-//        getAllUsers: Metoda pobiera wszystkich użytkowników z bazy danych, wykorzystując metodę findAll z interfejsu UserRepository.
-
-//        getUserById: Metoda pobiera użytkownika o określonym ID z bazy danych, używając metody findById z interfejsu UserRepository.
-//        Jeśli użytkownik nie istnieje, rzucany jest wyjątek UserNotFoundException.
-
-//        registerUser: Metoda dodaje nowego użytkownika do bazy danych, używając metody save z interfejsu UserRepository.
-//        Przed zapisaniem użytkownika można dodać logikę walidacji danych rejestracyjnych.
-//
-//        editUser: Metoda edytuje istniejącego użytkownika na podstawie przekazanych danych, używając metody save z interfejsu UserRepository.
-//        Jeśli użytkownik nie istnieje, rzucany jest wyjątek UserNotFoundException.
-//
-//        deleteUser: Metoda usuwa istniejącego użytkownika z bazy danych, używając metody delete z interfejsu UserRepository.
-//        Jeśli użytkownik nie istnieje, rzucany jest wyjątek UserNotFoundException.
