@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import javax.sql.DataSource;
 
@@ -24,13 +25,56 @@ import javax.sql.DataSource;
 @EnableMethodSecurity(securedEnabled = true) // jak byście chcieli nad metodani pisać jakie są dostępy to trzeba to włączyć
 public class SecurityConfig {
 
-//    private final DataSource dataSource;
-//
-//    @Autowired
-//    public SecurityConfig(DataSource dataSource) {
-//        this.dataSource = dataSource;
+    @Autowired
+    private DataSource dataSource;
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .httpBasic(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((authorize) -> authorize
+//                        .requestMatchers("/home", "/user/**").hasAnyAuthority("ADMIN")
+                                .requestMatchers("/**").hasAnyAuthority("ROLE_ADMIN")
+                                .requestMatchers("*").hasAnyAuthority("ROLE_ADMIN")
+//                        .requestMatchers("/user/**").hasAnyAuthority("ROLE_USER")
+                                .requestMatchers("/").permitAll()
+                                .anyRequest().authenticated()
+                )
+//                .addFilterBefore(switchUserFilter(), SwitchUserFilter.class);
+                .formLogin(login -> login
+                        .loginPage("/login") // Dodaj własną stronę logowania
+                        .defaultSuccessUrl("/")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
+
+        return httpSecurity.build();
+    }
+
+//    @Bean
+//    public SwitchUserFilter switchUserFilter() {
+//        SwitchUserFilter switchUserFilter = new SwitchUserFilter();
+//        switchUserFilter.setUserDetailsService(userDetailsService());
+//        switchUserFilter.setSwitchUserUrl("/switchUser");
+//        switchUserFilter.setExitUserUrl("/exitSwitchUser");
+//        switchUserFilter.setTargetUrl("/");
+//        return switchUserFilter;
 //    }
-//
+
+    @Bean
+    public UserDetailsManager userDetailsService() {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+}
+
+
+
+
+
+
 //    @Bean
 //    UserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
 //        return new JdbcUserDetailsManager(dataSource);
@@ -46,33 +90,11 @@ public class SecurityConfig {
 //    }
 
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .httpBasic(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((authorize) -> authorize
-//                        .requestMatchers("/home", "/user/**").hasAnyAuthority("ADMIN")
-                        .requestMatchers("/**").hasAnyAuthority("ROLE_ADMIN")
-                        .requestMatchers("*").hasAnyAuthority("ROLE_ADMIN")
-//                        .requestMatchers("/user/**").hasAnyAuthority("ROLE_USER")
-                        .requestMatchers("/").permitAll()
-                        .anyRequest().authenticated()
-                );
-//                .formLogin(login -> login
-//                        .loginPage("/login") // Dodaj własną stronę logowania
-//                        .defaultSuccessUrl("/")
-//                        .permitAll())
-//                .logout(logout -> logout
-//                        .logoutSuccessUrl("/"));
-
-        return httpSecurity.build();
-    }
 //    @Bean
 //    public PasswordEncoder passwordEncoder() {
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 //    }
-}
+
 
 //    @Bean
 //    public UserDetailsManager userDetailsManager() {

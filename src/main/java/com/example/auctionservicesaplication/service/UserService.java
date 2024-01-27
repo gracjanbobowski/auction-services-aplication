@@ -55,36 +55,26 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setEnabled(true);
 
-        // Sprawdź, czy rola o nazwie "ROLE_USER" istnieje
         Role userRole = roleRepository.findByName("ROLE_USER");
         if (userRole == null) {
-            // Jeśli nie istnieje, utwórz nową rolę i zapisz ją do bazy danych
             userRole = new Role("ROLE_USER");
             roleRepository.save(userRole);
         }
 
-        // Dodaj rolę "ROLE_USER" do użytkownika
         user.getRoles().add(userRole);
 
-        // Zapisz użytkownika do bazy danych
         userRepository.save(user);
     }
 
     public void assignAdminRole(User user) {
-        // Sprawdź, czy rola o nazwie "ROLE_ADMIN" istnieje
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         if (adminRole == null) {
-            // Jeśli nie istnieje, utwórz nową rolę i zapisz ją do bazy danych
             adminRole = new Role("ROLE_ADMIN");
             roleRepository.save(adminRole);
         }
 
-        // Sprawdź, czy użytkownik nie ma już roli "ROLE_ADMIN"
         if (!user.getRoles().contains(adminRole)) {
-            // Dodaj rolę "ROLE_ADMIN" do użytkownika
             user.getRoles().add(adminRole);
-
-            // Zapisz użytkownika do bazy danych
             userRepository.save(user);
         }
     }
@@ -99,7 +89,6 @@ public class UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        // Aktualizuj dane użytkownika
         existingUser.setUsername(editedUser.getUsername());
         existingUser.setEmail(editedUser.getEmail());
         existingUser.setPassword(editedUser.getPassword());
@@ -111,11 +100,9 @@ public class UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        // Dodaj logikę usuwania użytkownika
         userRepository.delete(userToDelete);
     }
 
-    // Dodaj tę metodę, aby uzyskać UserDetails na podstawie nazwy użytkownika
     @Transactional
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
