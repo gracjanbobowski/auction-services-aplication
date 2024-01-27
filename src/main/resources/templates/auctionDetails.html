@@ -45,12 +45,12 @@
                 <p th:text="${auction.endTime}"></p>
             </div>
         </div>
-
     </div>
 </section>
 <section class="container mt-3">
-    <a th:href="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}" class="btn btn-warning">Edytuj</a>
-    <a th:href="@{/auctions}" class="btn btn-primary">Powrót</a>
+    <!-- Dodany link do strony z ofertami -->
+    <a th:href="@{'/bids/' + ${auction.id} + '/details/placeBid'}" class="btn btn-primary">Licytuj</a>
+    <a th:href="@{/auctions}" class="btn btn-warning">Powrót</a>
 </section>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
@@ -58,4 +58,3 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
-

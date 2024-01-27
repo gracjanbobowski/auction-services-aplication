@@ -5,14 +5,18 @@ import com.example.auctionservicesaplication.model.Bid;
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.BidService;
+import com.example.auctionservicesaplication.service.EmailService;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,17 +28,20 @@ public class BidController {
     private final AuctionService auctionService;
     private final BidService bidService;
     private final UserService userService;
+    private final EmailService emailService;
+
 
     @Autowired
-    public BidController(AuctionService auctionService, BidService bidService, UserService userService) {
+    public BidController(AuctionService auctionService, BidService bidService, UserService userService, EmailService emailService) {
         this.auctionService = auctionService;
         this.bidService = bidService;
         this.userService = userService;
+        this.emailService = emailService;
     }
 
     @GetMapping
     public String getAllBids(Model model) {
-        List<Auction> auctions = auctionService.getAllAuction();  // Corrected method name
+        List<Auction> auctions = auctionService.getAllAuction();
         model.addAttribute("auctions", auctions);
         return "bids";
     }
@@ -55,73 +62,77 @@ public class BidController {
         return "auctionDetails";
     }
 
-    @GetMapping("/{auctionId}/details")
-    public String getBidDetails(@PathVariable BigDecimal auctionId, @PathVariable BigDecimal bidId, Model model) {
-        Bid bid = bidService.getBidById(bidId);
-        model.addAttribute("bid", bid);
-        return "bidDetails";
+    @GetMapping("/{auctionId}/bidsForAuction")
+    public String getBidsForAuction(@PathVariable BigDecimal auctionId, Model model) {
+        Auction auction = auctionService.getAuctionById(auctionId);
+        List<Bid> bids = bidService.getBidsByAuction(auction);
+        BigDecimal currentBidAmount = auction.getCurrentPrice();
+        model.addAttribute("auction", auction);
+        model.addAttribute("bids", bids);
+        model.addAttribute("currentBidAmount", currentBidAmount);
+        return "bidsForAuction";
     }
 
-    //    @PostMapping("/{auctionId}/bids/{bidId}/placeBid")
-//    public String placeBid(
-//            @PathVariable Long auctionId,
-//            @PathVariable Long bidId,
-//            @RequestParam BigDecimal newBidAmount) {
-//        // Pobierz aukcję i licytantów, a następnie utwórz nową ofertę i dodaj ją do listy ofert aukcji
-//        Auction auction = auctionService.getAuctionById(BigDecimal.valueOf(auctionId));
-//
-//        // Pobierz zalogowanego użytkownika przy użyciu Spring Security
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User bidder = userService.getUserById(BigDecimal.valueOf(Long.valueOf(authentication.getName())));
-//
-//        Bid newBid = new Bid();
-//        newBid.setAuction(auction);
-//        newBid.setBidder(bidder);
-//        newBid.setBidAmount(newBidAmount.doubleValue());
-//        newBid.setBidTime(LocalDateTime.now());
-//
-//
-//        // Umieść logikę walidacji, czy oferta jest wyższa niż aktualna najwyższa oferta itp.
-//
-//        auctionService.addBidToAuction(auction, newBid);
-//        auctionService.editAuction(BigDecimal.valueOf(auctionId), auction);
-//
-//        return "redirect:/auctions/{auctionId}";
-//    }
-    @PostMapping("/{auctionId}/details/placeBid")
-    public String placeBid(
-            @PathVariable BigDecimal auctionId,
-            @RequestParam Double newBidAmount) {
-        // Fetch auction, bidder, and create a new bid
+    @GetMapping("/{auctionId}/details/placeBid")
+    public String getPlaceBidForm(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
-
-        // Fetch the authenticated user using Spring Security
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User bidder = userService.getUserById(BigDecimal.valueOf(Long.parseLong(authentication.getName())));
+        model.addAttribute("auction", auction);
 
         Bid newBid = new Bid();
+        model.addAttribute("newBid", newBid);
+
+        BigDecimal currentAuctionPrice = auctionService.getHighestBidAmount(auction);
+        model.addAttribute("currentAuctionPrice", currentAuctionPrice);
+
+        return "placeBidForm";
+    }
+
+    @PostMapping("/{auctionId}/placeBid")
+    public String placeBid(
+            @PathVariable BigDecimal auctionId,
+            @ModelAttribute("newBid") @Valid Bid newBid,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        Auction auction = auctionService.getAuctionById(auctionId);
+
+        if (bindingResult.hasErrors()) {
+            return "placeBidForm";
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String bidderUsername = authentication.getName();
+        User bidder = userService.getUserByUsername(bidderUsername);
+
         newBid.setAuction(auction);
         newBid.setBidder(bidder);
-        newBid.setBidAmount(newBidAmount.doubleValue());
         newBid.setBidTime(LocalDateTime.now());
 
-        // Add validation logic here, e.g., check if the bid is higher than the current highest bid, etc.
-        validateBid(newBid, auction);
+        validateBid(newBid, auction, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            return "placeBidForm";
+        }
 
         bidService.createBid(newBid);
 
-        return "redirect:/bids/" + auctionId + "/details";
+        BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
+        if (newBid.getBidAmount().compareTo(highestBidAmount) > 0) {
+            auction.setCurrentPrice(newBid.getBidAmount());
+            auctionService.updateAuction(auction);
+
+            // Wysyłanie potwierdzenia licytacji
+            bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
+        }
+
+        return "redirect:/bids/" + auctionId + "/bidsForAuction";
     }
 
-    private void validateBid(Bid newBid, Auction auction) {
+    private void validateBid(Bid newBid, Auction auction, BindingResult bindingResult) {
         List<Bid> bids = bidService.getBidsByAuction(auction);
 
-        // Add your validation logic here, for example, check if the new bid is higher than the current highest bid
-
-        // Example: Check if the new bid amount is higher than the highest bid amount
-        if (bids.stream().anyMatch(bid -> bid.getBidAmount() >= newBid.getBidAmount())) {
-            // Throw an exception or handle the validation error
-            throw new IllegalArgumentException("Bid amount must be higher than the current highest bid.");
+        if (bids.stream().anyMatch(bid -> bid.getBidAmount().compareTo(newBid.getBidAmount()) >= 0)) {
+            bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current highest bid.");
         }
     }
 }

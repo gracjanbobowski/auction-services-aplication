@@ -3,7 +3,7 @@ package com.example.auctionservicesaplication.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import jakarta.persistence.GenerationType;
 import javax.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +11,8 @@ import java.util.Set;
 
 //User: Reprezentuje użytkownika.
 
-@Getter
+
+@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +20,6 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -43,17 +43,19 @@ public class User {
     @NotEmpty(message = "Password is required")
     private String password;
 
-    private  boolean enabled;
+    @Column(nullable = false)
+    private boolean enabled;
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
-        name = "users_role",
-        joinColumns = @JoinColumn(name = "user_id"),
+            name = "users_role",
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Getter
     private Set<Role> roles = new HashSet<>();
 
-
-
-
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+    }
 }
+

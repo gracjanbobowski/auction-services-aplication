@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
+<!-- Add this line near the "Serwis Aukcyjny" title -->
+<div>Zalogowany: <span th:text="${loggedInUser}"></span></div>
 <header class="container mt-3">
     <div class="header-flex">
         <h1>Serwis Aukcyjny</h1>
@@ -20,6 +21,7 @@
             <div class="dropdown-menu" aria-labelledby="loginDropdown">
                 <a class="dropdown-item" th:href="@{/login}">Zaloguj się</a>
                 <a class="dropdown-item" th:href="@{/users/register}">Zarejestruj się</a>
+                <a class="dropdown-item" th:href="@{/logout}">Wyloguj się</a> <!-- Updated link for "Wyloguj" -->
             </div>
         </div>
     </div>
@@ -68,7 +70,6 @@
     </div>
 </section>
 
-
 <footer class="container mt-3">
     <p>&copy; 2024 Serwis Aukcyjny</p>
 </footer>
@@ -76,5 +77,19 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script th:inline="javascript">
+    // Use AJAX to fetch and update the logged-in user dynamically
+    function updateLoggedInUser() {
+        $.get("/users/loggedInUser", function (data) {
+            $("#loggedInUser").text(data);
+        });
+    }
+
+    // Call the function on page load
+    $(document).ready(function () {
+        updateLoggedInUser();
+    });
+</script>
 </body>
 </html>

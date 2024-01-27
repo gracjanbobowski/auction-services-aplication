@@ -1,10 +1,15 @@
 package com.example.auctionservicesaplication.controller;
 
 import com.example.auctionservicesaplication.model.Auction;
+import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.service.AuctionService;
+import com.example.auctionservicesaplication.service.BidService;
 import com.example.auctionservicesaplication.service.CategoryService;
 import com.example.auctionservicesaplication.model.Category;
+import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +24,15 @@ public class AuctionController {
 
     private final AuctionService auctionService;
     private final CategoryService categoryService;
+    private final BidService bidService;
+    private final UserService userService;
 
     @Autowired
-    public AuctionController(AuctionService auctionService, CategoryService categoryService) {
+    public AuctionController(AuctionService auctionService, CategoryService categoryService, BidService bidService, UserService userService) {
         this.auctionService = auctionService;
         this.categoryService = categoryService;
+        this.bidService = bidService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -35,8 +44,8 @@ public class AuctionController {
 
 
     @GetMapping("/{auctionId}")
-    public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(auctionId);
+    public String getAuctionDetails(@PathVariable Long auctionId, Model model) {
+        Auction auction = auctionService.getAuctionById(BigDecimal.valueOf(auctionId));
         model.addAttribute("auction", auction);
         return "auctionDetails";
     }
@@ -48,10 +57,17 @@ public class AuctionController {
         model.addAttribute("categories", categories);
         return "createdForm"; // Corrected template name
     }
-
     @PostMapping("/create")
     public String createAuction(@ModelAttribute Auction auction, Model model) {
-        auctionService.createAuction(auction);
+        // Pobierz informacje o zalogowanym użytkowniku
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User loggedInUser = (User) authentication.getPrincipal();
+
+        auctionService.createAuction(auction, loggedInUser);
+
+        // Dodaj informacje o zalogowanym użytkowniku do modelu
+        model.addAttribute("loggedInUser", loggedInUser);
+
         return "redirect:/auctions";
     }
 

@@ -4,6 +4,7 @@ package com.example.auctionservicesaplication.service;
 import com.example.auctionservicesaplication.message.AuctionNotFoundException;
 import com.example.auctionservicesaplication.model.Auction;
 import com.example.auctionservicesaplication.model.Bid;
+import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.AuctionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,12 @@ import java.util.Set;
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
+    private final BidService bidService;
 
     @Autowired
-    public AuctionService(AuctionRepository auctionRepository) {
+    public AuctionService(AuctionRepository auctionRepository, BidService bidService) {
         this.auctionRepository = auctionRepository;
+        this.bidService = bidService;
     }
 
     public List<Auction> getAllAuction() {
@@ -34,14 +37,24 @@ public class AuctionService {
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
     }
 
-    public Auction createAuction(Auction auction) {
-        // Upewnij się, że kategoria nie jest null
+    public Auction createAuction(Auction auction, User seller) {
         if (auction.getCategory() == null) {
-            // Obsłuż błąd, np. rzucenie wyjątku lub zwrócenie odpowiedzi błędu
             throw new IllegalArgumentException("Kategoria aukcji nie może być pusta.");
         }
 
+        auction.setSeller(seller); // Ustaw informacje o sprzedawcy
         return auctionRepository.save(auction);
+    }
+    public BigDecimal getHighestBidAmount(Auction auction) {
+        List<Bid> bids = bidService.getBidsByAuction(auction);
+        return bids.stream()
+                .map(Bid::getBidAmount)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    public void updateAuction(Auction auction) {
+        auctionRepository.save(auction);
     }
 
     public void editAuction(BigDecimal auctionId, Auction editedAuction) {
@@ -73,6 +86,16 @@ public class AuctionService {
         auctionRepository.delete(auctionToDelete);
     }
 
+    public void updateAuctionWithBid(Auction auction, Bid newBid) {
+        auction.setCurrentPrice(newBid.getBidAmount());
+        auctionRepository.save(auction);
+    }
+
+    public void addBidToAuctionAndUpdate(Auction auction, Bid newBid) {
+        addBidToAuction(auction, newBid);
+        updateAuctionWithBid(auction, newBid);
+    }
+
     public void addBidToAuction(Auction auction, Bid newBid) {
         Set<Bid> bids = auction.getBids();
         if (bids == null) {
@@ -82,5 +105,6 @@ public class AuctionService {
         bids.add(newBid);
         auctionRepository.save(auction);
     }
+
 }
 
