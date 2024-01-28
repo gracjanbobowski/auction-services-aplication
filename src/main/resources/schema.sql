@@ -88,7 +88,7 @@ create table if not exists users (
                                     `enabled` bit(1) NOT NULL,
                                     PRIMARY KEY (`user_id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
+;
 #Tabela Roli Użytkowników
 
 create table if not exists `users_role` (

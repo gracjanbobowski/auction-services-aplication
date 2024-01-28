@@ -1,6 +1,7 @@
 package com.example.auctionservicesaplication.service;
 
 import com.example.auctionservicesaplication.message.UserNotFoundException;
+
 import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.RoleRepository;

@@ -9,26 +9,22 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<!-- Dodaj ten fragment kodu w okolicy tytułu "Serwis Aukcyjny" -->
-<div th:if="${auctionLoggedInUser != null}">
-    <p>Zalogowany użytkownik dla aukcji: <span th:text="${auctionLoggedInUser}"></span></p>
-</div>
+<section class="container mt-3">
+    <h2>Witaj, <span th:text="${loggedInUser}"></span>!</h2>
+    <!-- Dodaj dowolne treści specyficzne dla widoku użytkownika -->
+</section>
 <header class="container mt-3">
     <div class="header-flex">
         <h1>Serwis Aukcyjny</h1>
-        <div class="dropdown float-right">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-sign-in-alt"></i> Zaloguj/Zarejestruj
-            </button>
-            <div class="dropdown-menu" aria-labelledby="loginDropdown">
-                <a class="dropdown-item" th:href="@{/login}">Zaloguj się</a>
-                <a class="dropdown-item" th:href="@{/users/register}">Zarejestruj się</a>
-                <a class="dropdown-item" th:href="@{/logout}">Wyloguj się</a> <!-- Updated link for "Wyloguj" -->
-            </div>
+        <div class="float-right">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn btn-secondary" type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Wyloguj
+                </button>
+            </form>
         </div>
     </div>
 </header>
-
 <section class="container mt-3">
     <h2>Przykładowe sekcje</h2>
     <div class="row">
@@ -45,7 +41,6 @@
             </ul>
             <a th:href="@{/categories/add}" class="btn btn-info">Dodaj kategorie</a>
         </div>
-
         <!-- Sekcja Aukcji -->
         <div class="col category-box">
             <h3>Aukcje</h3>
@@ -53,7 +48,6 @@
             <i class="fas fa-gavel"></i> <!-- Przykładowa ikona dla aukcji -->
             <a th:href="@{/auctions}" class="btn btn-info">Przeglądaj aukcje</a>
         </div>
-
         <!-- Sekcja Licytacji -->
         <div class="col category-box">
             <h3>Licytacje</h3>
@@ -61,7 +55,6 @@
             <i class="fas fa-hand-holding-usd"></i> <!-- Przykładowa ikona dla licytacji -->
             <a th:href="@{/bids}" class="btn btn-info">Przeglądaj licytacje</a>
         </div>
-
         <!-- Sekcja Użytkowników -->
         <div class="col category-box">
             <h3>Użytkownicy</h3>
@@ -74,11 +67,13 @@
 
 <footer class="container mt-3">
     <p>&copy; 2024 Serwis Aukcyjny</p>
+    <!-- Dodaj ten fragment kodu w okolicy tytułu "Serwis Aukcyjny" -->
 </footer>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 
 </body>
 </html>
