@@ -1,3 +1,10 @@
+-- Dodaj przykładowe kategorie
+INSERT INTO categories (category_name, description) VALUES
+                                                        ('Electronics', 'Electronic gadgets and devices'),
+                                                        ('Books', 'Various types of books'),
+                                                        ('Clothing', 'Clothing items and accessories'),
+                                                        ('Home and Garden', 'Items for home and garden'),
+                                                        ('Toys and Games', 'Toys and games for all ages');
 -- Utwórz role i autoryzację dla administratora
 INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
 

@@ -1,15 +1,14 @@
 package com.example.auctionservicesaplication.controller;
 
 import com.example.auctionservicesaplication.model.Auction;
+import com.example.auctionservicesaplication.model.Category;
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.BidService;
 import com.example.auctionservicesaplication.service.CategoryService;
-import com.example.auctionservicesaplication.model.Category;
 import com.example.auctionservicesaplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
