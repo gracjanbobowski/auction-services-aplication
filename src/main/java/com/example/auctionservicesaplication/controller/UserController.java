@@ -1,7 +1,9 @@
 package com.example.auctionservicesaplication.controller;
 
+import com.example.auctionservicesaplication.model.Authority;
 import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
+import com.example.auctionservicesaplication.repository.AuthorityRepository;
 import com.example.auctionservicesaplication.repository.RoleRepository;
 import com.example.auctionservicesaplication.repository.UserRepository;
 import com.example.auctionservicesaplication.service.EmailService;
@@ -10,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Controller;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,26 +39,29 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsManager userDetailsManager;
     private final RoleRepository roleRepository;
+    private final AuthorityRepository authorityRepository;
 
+    // Wstrzykiwanie zależności do kontrolera.
     @Autowired
     public UserController(UserService userService, UserRepository userRepository,
                           EmailService emailService, PasswordEncoder passwordEncoder,
-                          UserDetailsManager userDetailsManager, RoleRepository roleRepository) {
+                          UserDetailsManager userDetailsManager, RoleRepository roleRepository, AuthorityRepository authorityRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsManager = userDetailsManager;
         this.roleRepository = roleRepository;
+        this.authorityRepository = authorityRepository;
     }
-
+    // Obsługuje żądanie pobrania listy wszystkich użytkowników.
     @GetMapping
     public String getAllUsers(Model model) {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
         return "userList";
     }
-
+    // Obsługuje żądanie pobrania szczegółowych informacji o użytkowniku.
     @GetMapping("/{userId}/details")
     @Secured("ROLE_ADMIN")
     public String getUserDetails(@PathVariable BigDecimal userId, Model model, Principal principal) {
@@ -71,12 +74,17 @@ public class UserController {
 
         return "userDetails";
     }
-
-    @GetMapping("/home")
-    @Secured("ROLE_USER")
-    public String home(Model model, Principal principal) {
+    // Obsługuje żądanie dostępu do strony głównej użytkownika.
+    @GetMapping("/admin/home")
+    @Secured("ROLE_ADMIN")
+    public String adminHome(Model model, Principal principal) {
         if (principal != null) {
-            model.addAttribute("loggedInUser", principal.getName());
+            String username = principal.getName();
+            User loggedInUser = userService.getUserByUsername(username);
+
+            if (loggedInUser != null) {
+                model.addAttribute("loggedInUser", loggedInUser);
+            }
         }
 
         // Reszta kodu obsługującego stronę główną
@@ -84,19 +92,23 @@ public class UserController {
         return "home";
     }
 
-    @GetMapping("/loggedInUser")
-    @ResponseBody
-    @Secured("ROLE_ADMIN")
-    public String getLoggedInUser() {
+    @GetMapping("/userhome")
+    @Secured("ROLE_USER")
+    public String userHome(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() instanceof String) {
-            return "Not logged in";
+        String username = authentication.getName();
+
+        User loggedInUser = userService.getUserByUsername(username);
+
+        if (loggedInUser != null) {
+            model.addAttribute("loggedInUser", loggedInUser);
         }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userDetails.getUsername();
-    }
+        // Reszta kodu obsługującego stronę główną użytkownika
 
+        return "userhome";
+    }
+    // Obsługuje żądanie pobrania szczegółowych informacji o użytkowniku.
     @GetMapping("/{userId}")
     @Secured("ROLE_ADMIN")
     public String getUserDetails(@PathVariable Long userId, Model model, Principal principal) {
@@ -109,14 +121,14 @@ public class UserController {
 
         return "userDetails";
     }
-
+    // Obsługuje żądanie dostępu do formularza rejestracji nowego użytkownika.
     @GetMapping("/register")
     @Secured("ROLE_ADMIN")
     public String getRegistrationForm(Model model) {
         model.addAttribute("user", new User());
         return "registrationForm";
     }
-
+    // Obsługuje żądanie rejestracji nowego użytkownika.
     @PostMapping("/register")
     @Secured("ROLE_ADMIN")
     public String registerUser(@ModelAttribute @Valid User user, BindingResult bindingResult, Model model) {
@@ -134,23 +146,27 @@ public class UserController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.registerUser(user);
+        user.setEnabled(true);
 
-        UserDetails userDetails = userDetailsManager.loadUserByUsername(user.getUsername());
-        userDetailsManager.createUser(userDetails);
-
-        emailService.sendRegistrationConfirmation(user.getEmail(), user.getUsername());
-
-        if (user.isAdmin()) {
-            userService.assignAdminRole(user);
+        Role userRole = roleRepository.findByName("ROLE_USER");
+        if (userRole == null) {
+            userRole = new Role("ROLE_USER");
+            roleRepository.save(userRole);
         }
+
+        user.getRoles().add(userRole);
+        userRepository.save(user);
+
+        // Dodajemy autoryzację ROLE_USER dla nowego użytkownika
+        Authority userAuthority = new Authority(user.getUsername(), "ROLE_USER");
+        authorityRepository.save(userAuthority);
 
         model.addAttribute("success", true);
         model.addAttribute("loggedInUser", user.getUsername());
 
         return "redirect:/users";
     }
-
+    // Obsługuje żądanie dostępu do formularza edycji użytkownika.
     @GetMapping("/{userId}/edit")
     @Secured("ROLE_ADMIN")
     public String getEditForm(@PathVariable String userId, Model model) {
@@ -159,7 +175,7 @@ public class UserController {
         model.addAttribute("user", user);
         return "editForm";
     }
-
+    // Obsługuje żądanie edycji danych użytkownika.
     @PostMapping("/{userId}/edit")
     @Secured("ROLE_ADMIN")
     public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
@@ -167,7 +183,7 @@ public class UserController {
         userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
         return "redirect:/users";
     }
-
+    // Obsługuje żądanie usunięcia użytkownika.
     @GetMapping("/{userId}/delete")
     @Secured("ROLE_ADMIN")
     public String deleteUser(@PathVariable String userId) {
@@ -175,7 +191,7 @@ public class UserController {
         userService.deleteUser(BigDecimal.valueOf(userIdLong));
         return "redirect:/users";
     }
-
+    // Obsługuje żądanie przypisania roli użytkownikowi.
     @PostMapping("/{userId}/assignRole")
     @Secured("ROLE_ADMIN")
     public String assignRoleToUser(@PathVariable BigDecimal userId, @RequestParam String roleName) {
@@ -195,17 +211,3 @@ public class UserController {
         return "redirect:/users";
     }
 }
-
-// fixMe : Byłem tu :)
-
-//Opisy:
-//
-//        getAllUsers: Endpoint do wyświetlania listy wszystkich użytkowników.
-//        getUserDetails: Endpoint do wyświetlania szczegółów danego użytkownika.
-//        getRegistrationForm: Endpoint do wyświetlania formularza rejestracyjnego.
-//        registerUser: Endpoint obsługujący przesyłanie danych z formularza rejestracyjnego.
-//        getEditForm: Endpoint do wyświetlania formularza edycji użytkownika.
-//        editUser: Endpoint obsługujący przesyłanie danych z formularza edycji użytkownika.
-//        deleteUser: Endpoint do usuwania użytkownika.
-//        Uwaga: Nazwy plików HTML (np. "userList.html", "userDetails.html", "registrationForm.html", "editForm.html")
-//        są przykładowe i powinny zostać dostosowane do struktury projektu i używanego silnika szablonów (np. Thymeleaf).

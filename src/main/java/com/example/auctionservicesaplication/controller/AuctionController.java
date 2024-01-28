@@ -27,7 +27,7 @@ public class AuctionController {
     private final CategoryService categoryService;
     private final BidService bidService;
     private final UserService userService;
-
+    // Iniekcja zależności poprzez konstruktor.
     @Autowired
     public AuctionController(AuctionService auctionService, CategoryService categoryService, BidService bidService, UserService userService) {
         this.auctionService = auctionService;
@@ -35,21 +35,21 @@ public class AuctionController {
         this.bidService = bidService;
         this.userService = userService;
     }
-
+    // Pobiera i wyświetla listę wszystkich aukcji.
     @GetMapping
     public String getAllAuctions(Model model) {
         List<Auction> auctions = auctionService.getAllAuction();
         model.addAttribute("auctions", auctions);
         return "auctions";
     }
-
+    // Pobiera i wyświetla szczegóły danej aukcji.
     @GetMapping("/{auctionId}")
     public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
         return "auctionDetails";
     }
-
+    // Pobiera formularz do utworzenia nowej aukcji.
     @GetMapping("/create")
     public String getCreateForm(Model model) {
         model.addAttribute("auction", new Auction());
@@ -57,6 +57,7 @@ public class AuctionController {
         model.addAttribute("categories", categories);
         return "createdForm"; // Corrected template name
     }
+    // Obsługuje proces utworzenia nowej aukcji.
     @PostMapping("/create")
     public String createAuction(@ModelAttribute Auction auction, Model model, Authentication authentication) {
         // Sprawdź, czy użytkownik jest zalogowany
@@ -79,7 +80,7 @@ public class AuctionController {
             return "redirect:/login"; // Przekieruj na stronę logowania lub obsłuż inaczej
         }
     }
-
+    // Pobiera formularz do edycji danej aukcji.
     @GetMapping("/{auctionId}/edit")
     public String getEditForm(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
@@ -88,7 +89,7 @@ public class AuctionController {
         model.addAttribute("categories", categories);
         return "editFormAuction";
     }
-
+    // Obsługuje proces edycji danej aukcji.
     @PostMapping("/{auctionId}/edit")
     public String editAuction(@ModelAttribute Auction auction, @PathVariable BigDecimal auctionId) {
         if (auctionService.getAuctionById(auctionId) == null) {
@@ -97,7 +98,7 @@ public class AuctionController {
         auctionService.editAuction(auctionId, auction);
         return "redirect:/auctions";
     }
-
+    // Obsługuje proces usunięcia danej aukcji.
     @GetMapping("/{auctionId}/delete")
     public String deleteAuction(@PathVariable BigDecimal auctionId) {
         auctionService.deleteAuction(auctionId);

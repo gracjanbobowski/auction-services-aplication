@@ -1,26 +1,41 @@
+-- Utwórz role i autoryzację dla administratora
+INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
 
---
--- INSERT INTO roles (role_id, name) VALUES
---                                       (1, 'ROLE_USER'),
---                                       (2, 'ROLE_ADMIN');
+-- Sprawdź, czy autoryzacja dla administratora nie istnieje przed dodaniem
+INSERT INTO authorities (username, authority)
+SELECT 'admin', 'ROLE_ADMIN'
+FROM dual
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM authorities
+        WHERE username = 'admin' AND authority = 'ROLE_ADMIN'
+    );
 
-INSERT INTO categories (category_name, description) VALUES
-                                                        ('Electronics', 'Electronic gadgets and devices'),
-                                                        ('Books', 'Various types of books'),
-                                                        ('Clothing', 'Clothing items and accessories'),
-                                                        ('Home and Garden', 'Items for home and garden'),
-                                                        ('Toys and Games', 'Toys and games for all ages');
+-- Utwórz rolę i autoryzację dla użytkownika, jeśli nie istnieje
+INSERT IGNORE INTO roles (name) VALUES ('ROLE_USER');
 
-DELETE FROM users;
+-- Sprawdź, czy autoryzacja dla użytkownika nie istnieje przed dodaniem
+INSERT IGNORE INTO authorities (username, authority)
+SELECT 'user', 'ROLE_USER'
+FROM dual
+WHERE NOT EXISTS (
+        SELECT 2
+        FROM authorities
+        WHERE username = 'user' AND authority = 'ROLE_USER'
+    );
 
-INSERT INTO users (user_id, username, email, password, enabled) VALUES
-                                                                    (1, 'a', 'a', 'a', 0),
-                                                                    (2, 'admin', 'admin', '$2a$12$EYK.8IPJ.LGSzQzzbI4XYudHTuxuTziJEdKiViuzvz5pNouGCixly', 1),
-                                                                    (3, 'aq', 'q', 'aq', 1),
-                                                                    (4, 'G', 'G', '$2a$10$MRkUz9ia1SLmjxTN83gL6uJVzLY/xGXKUzzZk/3qZli0IAurhcfjm', 1),
-                                                                    (5, 'w', 'w', '$2a$10$3OXovnVoqFJer8lnNLYjgerI6fhA0WL0KCfJ1VTyiALo2O30O1Uhy', 1),
-                                                                    (7, 'me', 'me', '$2a$10$49WGo6A/jjfCS.kzN1sAput9eRw6urNMh2OhnnHIFPhPmlrTZAdY6', 1),
-                                                                    (8, '1', '1', '$2a$10$g2fGFCVNf/UXvSV/ylOfmee5OIfOzJ3v.54LN5cErOX8iNGdny.OW', 1),
-                                                                    (9, 'ad', 'ad', '$2a$10$U2Q0FDTsWzsKyjwqwry6Hewm7a7n2lgaXepWms0eHhLqABG2oNCsS', 1),
-                                                                    (10, 'adasdsa', 'fasfsaf', '$2a$10$vvYFH0X20t27hvjpHmUf9.0EOQZccVQuiu52MT0TxrHW1wYlF4h6e', 1),
-                                                                    (12, 'user', NULL, '$2a$10$whHv4tfXCvFS8GlbzxuAHeH7QpZdfyw/gAqxlRH9TmeaYKVxiCiGm', 1);
+-- Dodaj przykładowych użytkowników (admin, user)
+INSERT INTO users (username, email, password, enabled)
+VALUES ('admin', 'admin@example.com', '$2a$12$EYK.8IPJ.LGSzQzzbI4XYudHTuxuTziJEdKiViuzvz5pNouGCixly', 1);
+
+INSERT INTO users (username, email, password, enabled)
+VALUES ('user', 'user@example.com', '$2a$12$1kskjU9yQ7.thXERATW2K.jM3.tDWrR8YHLI08pza.SWeH4r01UOO', 1);
+
+-- Przypisz role do użytkowników
+INSERT INTO users_role (user_id, role_id)
+VALUES ((SELECT user_id FROM users WHERE username = 'admin'),
+        (SELECT role_id FROM roles WHERE name = 'ROLE_ADMIN'));
+
+INSERT INTO users_role (user_id, role_id)
+VALUES ((SELECT user_id FROM users WHERE username = 'user'),
+        (SELECT role_id FROM roles WHERE name = 'ROLE_USER'));

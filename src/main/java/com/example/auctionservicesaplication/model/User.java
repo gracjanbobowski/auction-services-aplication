@@ -57,4 +57,8 @@ public class User {
     public boolean isAdmin() {
         return roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
     }
+
+    public boolean isUser() {
+        return roles.stream().anyMatch(role -> role.getName().equals("ROLE_USER"));
+    }
 }
