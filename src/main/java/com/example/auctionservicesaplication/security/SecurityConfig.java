@@ -44,7 +44,8 @@ public class SecurityConfig {
 //                .addFilterBefore(switchUserFilter(), SwitchUserFilter.class);
                 .formLogin(login -> login
                         .loginPage("/login") // Dodaj własną stronę logowania
-                        .defaultSuccessUrl("/")
+//                        .defaultSuccessUrl("/")
+                        .successHandler(new SuccessHandler())
                         .permitAll())
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
