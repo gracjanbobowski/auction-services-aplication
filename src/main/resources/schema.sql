@@ -24,12 +24,11 @@ create table if not exists `auctions` (
 ;
 -- #Tabela Autentykacji
 
-create table if not exists `authorities` (
-                               `username` varchar(255) NOT NULL,
-                               `authority` varchar(255) NOT NULL,
-                               PRIMARY KEY (`username`,`authority`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
+CREATE TABLE IF NOT EXISTS authorities (
+    username VARCHAR(50),
+    authority VARCHAR(50),
+    FOREIGN KEY (username) REFERENCES users(username)
+    );
 -- #Tabela Licytacji
 
 create table if not exists `bids` (

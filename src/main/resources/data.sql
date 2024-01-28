@@ -1,8 +1,5 @@
 
---
--- INSERT INTO roles (role_id, name) VALUES
---                                       (1, 'ROLE_USER'),
---                                       (2, 'ROLE_ADMIN');
+INSERT INTO roles (name) VALUES ('ROLE_USER'), ('ROLE_ADMIN');
 
 INSERT INTO categories (category_name, description) VALUES
                                                         ('Electronics', 'Electronic gadgets and devices'),
@@ -13,14 +10,17 @@ INSERT INTO categories (category_name, description) VALUES
 
 DELETE FROM users;
 
-INSERT INTO users (user_id, username, email, password, enabled) VALUES
-                                                                    (1, 'a', 'a', 'a', 0),
-                                                                    (2, 'admin', 'admin', '$2a$12$EYK.8IPJ.LGSzQzzbI4XYudHTuxuTziJEdKiViuzvz5pNouGCixly', 1),
-                                                                    (3, 'aq', 'q', 'aq', 1),
-                                                                    (4, 'G', 'G', '$2a$10$MRkUz9ia1SLmjxTN83gL6uJVzLY/xGXKUzzZk/3qZli0IAurhcfjm', 1),
-                                                                    (5, 'w', 'w', '$2a$10$3OXovnVoqFJer8lnNLYjgerI6fhA0WL0KCfJ1VTyiALo2O30O1Uhy', 1),
-                                                                    (7, 'me', 'me', '$2a$10$49WGo6A/jjfCS.kzN1sAput9eRw6urNMh2OhnnHIFPhPmlrTZAdY6', 1),
-                                                                    (8, '1', '1', '$2a$10$g2fGFCVNf/UXvSV/ylOfmee5OIfOzJ3v.54LN5cErOX8iNGdny.OW', 1),
-                                                                    (9, 'ad', 'ad', '$2a$10$U2Q0FDTsWzsKyjwqwry6Hewm7a7n2lgaXepWms0eHhLqABG2oNCsS', 1),
-                                                                    (10, 'adasdsa', 'fasfsaf', '$2a$10$vvYFH0X20t27hvjpHmUf9.0EOQZccVQuiu52MT0TxrHW1wYlF4h6e', 1),
-                                                                    (12, 'user', NULL, '$2a$10$whHv4tfXCvFS8GlbzxuAHeH7QpZdfyw/gAqxlRH9TmeaYKVxiCiGm', 1);
+DELETE FROM users;
+INSERT INTO users (username, email, password, enabled) VALUES
+                                                           ('admin', 'admin@example.com', '$2a$12$tWEXDNqDa2HVwpNVWX4J/uCwPR0wtRaM60jU2Do/fDxFgurRF/3KS', 1),
+                                                           ('user', 'user@example.com', '$2a$12$cPClNuojjZCbnGOGB0oqPO4knZayTs7oArj17pjsZOotjkA.7GJLa', 1);
+
+DELETE FROM authorities;
+INSERT INTO authorities (username, authority) VALUES
+                                                  ('admin', 'ROLE_ADMIN'),
+                                                  ('user', 'ROLE_USER');
+
+DELETE FROM users_role;
+INSERT INTO users_role (user_id, role_id) VALUES
+                                                  ('1', '2'),
+                                                  ('2', '1');

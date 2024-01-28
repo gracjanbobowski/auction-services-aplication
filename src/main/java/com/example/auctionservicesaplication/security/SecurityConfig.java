@@ -3,56 +3,52 @@ package com.example.auctionservicesaplication.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import javax.sql.DataSource;
 
-
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(securedEnabled = true) // jak byście chcieli nad metodani pisać jakie są dostępy to trzeba to włączyć
 public class SecurityConfig {
 
     @Autowired
     private DataSource dataSource;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .httpBasic(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((authorize) -> authorize
-//                        .requestMatchers("/home", "/user/**").hasAnyAuthority("ADMIN")
-                                .requestMatchers("/**").hasAnyAuthority("ROLE_ADMIN")
-                                .requestMatchers("*").hasAnyAuthority("ROLE_ADMIN")
-//                        .requestMatchers("/user/**").hasAnyAuthority("ROLE_USER")
-                                .requestMatchers("/").permitAll()
-                                .anyRequest().authenticated()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/userhome").hasAuthority("ROLE_USER")
+                        .requestMatchers("/login", "/resources/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-//                .addFilterBefore(switchUserFilter(), SwitchUserFilter.class);
-                .formLogin(login -> login
-                        .loginPage("/login") // Dodaj własną stronę logowania
-                        .defaultSuccessUrl("/")
-                        .permitAll())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/default", true)
+                        .permitAll()
+                )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll());
+                        .permitAll()
+                );
 
-        return httpSecurity.build();
+        return http.build();
     }
+    @Bean
+    public UserDetailsManager userDetailsService() {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+}
+
 
 //    @Bean
 //    public SwitchUserFilter switchUserFilter() {
@@ -64,11 +60,6 @@ public class SecurityConfig {
 //        return switchUserFilter;
 //    }
 
-    @Bean
-    public UserDetailsManager userDetailsService() {
-        return new JdbcUserDetailsManager(dataSource);
-    }
-}
 
 
 

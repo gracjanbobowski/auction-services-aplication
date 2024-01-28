@@ -74,7 +74,19 @@ public class UserController {
 
     @GetMapping("/home")
     @Secured("ROLE_USER")
-    public String home(Model model, Principal principal) {
+    public String userHome(Model model, Principal principal) {
+        if (principal != null) {
+            model.addAttribute("loggedInUser", principal.getName());
+        }
+
+        // Reszta kodu obsługującego stronę główną
+
+        return "userhome";
+    }
+
+    @GetMapping("/admin/home")
+    @Secured("ROLE_ADMIN")
+    public String adminHome(Model model, Principal principal) {
         if (principal != null) {
             model.addAttribute("loggedInUser", principal.getName());
         }
