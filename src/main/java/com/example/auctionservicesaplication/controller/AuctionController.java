@@ -117,7 +117,4 @@ public class AuctionController {
         return auctionService.getAuctionById(auctionId);
     }
 
-//    private boolean isAuctionValid(Auction auction) {
-//        return auction.getTitle() != null && auction.getDescription() != null;
-//    }
 }

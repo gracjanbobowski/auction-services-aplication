@@ -7,6 +7,7 @@ import com.example.auctionservicesaplication.message.AuctionNotFoundException;
 import com.example.auctionservicesaplication.model.Auction;
 import com.example.auctionservicesaplication.model.Bid;
 import com.example.auctionservicesaplication.model.Category;
+import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.AuctionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,9 @@ public class AuctionServiceTest {
 
     @Mock
     private AuctionRepository auctionRepository;
+
+    @Mock
+    private BidService bidService;
 
     @InjectMocks
     private AuctionService auctionService;
@@ -69,6 +73,7 @@ public class AuctionServiceTest {
     // Test 4: createAuction() - Tests creating a new auction with valid data.
     @Test
     void createAuction_withValidData_savesAuction() {
+        // Arrange
         Auction newAuction = new Auction();
         newAuction.setTitle("Artwork");
         newAuction.setDescription("Beautiful artwork");
@@ -77,14 +82,21 @@ public class AuctionServiceTest {
         Category artCategory = new Category();
         artCategory.setCategoryName("Art");
         newAuction.setCategory(artCategory);
+
+        User seller = new User(); // Mock User (seller)
+        seller.setUsername("sellerUsername");
+
         when(auctionRepository.save(any(Auction.class))).thenReturn(newAuction);
 
-        Auction savedAuction = auctionService.createAuction(newAuction);
+        // Act
+        Auction savedAuction = auctionService.createAuction(newAuction, seller);
 
+        // Assert
         assertNotNull(savedAuction);
         assertEquals(artCategory, savedAuction.getCategory());
         assertEquals("Artwork", savedAuction.getTitle());
         assertEquals(new BigDecimal("100.00"), savedAuction.getStartingPrice());
+        assertEquals(seller, savedAuction.getSeller()); // Verify the seller is set correctly
     }
 
     // Test 5: createAuction() - Tests creating an auction with a null category.
@@ -97,7 +109,10 @@ public class AuctionServiceTest {
         newAuction.setCurrentPrice(new BigDecimal("100.00"));
         newAuction.setCategory(null);
 
-        assertThrows(IllegalArgumentException.class, () -> auctionService.createAuction(newAuction),
+        User seller = new User(); // Mock User (seller)
+        seller.setUsername("sellerUsername");
+
+        assertThrows(IllegalArgumentException.class, () -> auctionService.createAuction(newAuction, seller),
                 "Creating an auction with a null category should throw IllegalArgumentException");
     }
 
@@ -242,12 +257,63 @@ public class AuctionServiceTest {
         auction.setBids(new HashSet<>()); // Initialize the bids set
 
         Bid bid = new Bid();
-        bid.setBidAmount(100.0);
+        bid.setBidAmount(new BigDecimal("100.00")); // Corrected to BigDecimal
         bid.setBidTime(LocalDateTime.now());
 
         auctionService.addBidToAuction(auction, bid);
 
         assertTrue(auction.getBids().contains(bid), "The bid should be added to the auction's bids set");
+        verify(auctionRepository).save(auction);
+    }
+
+    // Test 13: getHighestBidAmount() - Tests getting the highest bid amount for a given auction.
+    @Test
+    public void getHighestBidAmount_withValidAuction_returnsHighestAmount() {
+        // Arrange
+        Auction auction = new Auction();
+        auction.setId(new BigDecimal("1"));
+
+        List<Bid> bids = Arrays.asList(
+                new Bid(null, auction, null, new BigDecimal("100.00"), LocalDateTime.now()),
+                new Bid(null, auction, null, new BigDecimal("200.00"), LocalDateTime.now())
+        );
+        when(bidService.getBidsByAuction(auction)).thenReturn(bids);
+
+        // Act
+        BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
+
+        // Assert
+        assertEquals(new BigDecimal("200.00"), highestBidAmount, "The highest bid amount should be returned.");
+    }
+
+    // Test 14: updateAuction() - Tests updating an auction.
+    @Test
+    public void updateAuction_withValidAuction_updatesAuction() {
+        // Arrange
+        Auction auction = new Auction();
+        auction.setId(new BigDecimal("1"));
+        auction.setTitle("Updated Auction");
+
+        // Act
+        auctionService.updateAuction(auction);
+
+        // Assert
+        verify(auctionRepository).save(auction);
+    }
+
+    // Test 15: updateAuctionWithBid() - Tests updating an auction with a new bid.
+    @Test
+    public void updateAuctionWithBid_withValidBid_updatesCurrentPrice() {
+        // Arrange
+        Auction auction = new Auction();
+        auction.setId(new BigDecimal("1"));
+        Bid newBid = new Bid(null, auction, null, new BigDecimal("300.00"), LocalDateTime.now());
+
+        // Act
+        auctionService.updateAuctionWithBid(auction, newBid);
+
+        // Assert
+        assertEquals(new BigDecimal("300.00"), auction.getCurrentPrice(), "The current price should be updated to the new bid amount.");
         verify(auctionRepository).save(auction);
     }
 }

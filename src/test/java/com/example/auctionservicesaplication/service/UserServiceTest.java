@@ -3,7 +3,9 @@ package com.example.auctionservicesaplication.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
+import com.example.auctionservicesaplication.repository.RoleRepository;
 import com.example.auctionservicesaplication.repository.UserRepository;
 import com.example.auctionservicesaplication.service.UserService;
 import com.example.auctionservicesaplication.message.UserNotFoundException;
@@ -14,11 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -26,8 +31,15 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserService userService;
+
 
     // Test 1: getAllUsers() - Tests that all users are retrieved.
     @Test
@@ -80,6 +92,8 @@ public class UserServiceTest {
         newUser.setUsername("testUser");
         newUser.setEmail("test@test.com");
         newUser.setPassword("password123");
+
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(newUser);
 
         // Act
@@ -158,5 +172,87 @@ public class UserServiceTest {
         // Act & Assert
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId),
                 "A UserNotFoundException should be thrown if the user is not found");
+    }
+
+    // Test 10: assignAdminRole() - Test if the admin role is successfully added to a user who doesn't have it.
+    @Test
+    public void assignAdminRole_addsRoleToUser() {
+        // Arrange
+        User user = new User();
+        user.setRoles(new HashSet<>());
+        Role adminRole = new Role("ROLE_ADMIN");
+
+        when(roleRepository.findByName("ROLE_ADMIN")).thenReturn(adminRole);
+
+        // Act
+        userService.assignAdminRole(user);
+
+        // Assert
+        assertTrue(user.getRoles().contains(adminRole), "Admin role should be added to the user");
+        verify(userRepository).save(user);
+    }
+
+    // Test 11: assignAdminRole() - Test to ensure the method doesn't add the admin role if the user already has it.
+    @Test
+    public void assignAdminRole_doesNotAddRoleIfAlreadyPresent() {
+        // Arrange
+        Role adminRole = new Role("ROLE_ADMIN");
+        User user = new User();
+        Set<Role> roles = new HashSet<>();
+        roles.add(adminRole);
+        user.setRoles(roles);
+
+        when(roleRepository.findByName("ROLE_ADMIN")).thenReturn(adminRole);
+
+        // Act
+        userService.assignAdminRole(user);
+
+        // Assert
+        assertEquals(1, user.getRoles().size(), "No new roles should be added");
+        verify(userRepository, never()).save(user);
+    }
+
+    // Test 12: getUserByUsername() - Test if the method retrieves a user correctly by their username.
+    @Test
+    public void getUserByUsername_retrievesUser() {
+        // Arrange
+        String username = "testUser";
+        User expectedUser = new User();
+        expectedUser.setUsername(username);
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(expectedUser));
+
+        // Act
+        User actualUser = userService.getUserByUsername(username);
+
+        // Assert
+        assertEquals(expectedUser, actualUser, "Should retrieve the correct user");
+    }
+
+    // Test 13: loadUserByUsername() - Test if the method loads UserDetails correctly for a given username.
+    @Test
+    public void loadUserByUsername_loadsUserDetails() {
+        // Arrange
+        String username = "testUser";
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setEnabled(true);
+        Set<Role> roles = Set.of(new Role("ROLE_USER"));
+        user.setRoles(roles);
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        // Act
+        UserDetails userDetails = userService.loadUserByUsername(username);
+
+        // Assert
+        assertEquals(username, userDetails.getUsername(), "Username should match");
+        assertEquals(user.getPassword(), userDetails.getPassword(), "Password should match");
+        assertTrue(userDetails.isEnabled(), "User should be enabled");
+        assertTrue(userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet())
+                .contains("ROLE_USER"), "Should contain ROLE_USER authority");
     }
 }

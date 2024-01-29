@@ -1,5 +1,6 @@
 package com.example.auctionservicesaplication.controller;
 
+import com.example.auctionservicesaplication.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,6 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.Model;
@@ -14,6 +17,7 @@ import com.example.auctionservicesaplication.model.Auction;
 import com.example.auctionservicesaplication.model.Category;
 import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.CategoryService;
+import com.example.auctionservicesaplication.service.UserService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +39,9 @@ public class AuctionControllerTest {
 
     @Mock
     private CategoryService categoryService;
+
+    @Mock
+    private UserService userService;
 
     @Mock
     private Model model;
@@ -110,20 +117,27 @@ public class AuctionControllerTest {
         assertEquals("createdForm", viewName, "Should return the createdForm view name.");
     }
 
-    // Test 5: createAuction() - Tests creating an auction and redirecting to the auctions list.
+    // Test 5: createAuction() - Tests creating an auction and redirecting to the auctions list with an authenticated user.
     @Test
-    public void createAuction_withValidData_createsAuctionAndRedirects() {
+    public void createAuction_withValidDataAndAuthenticatedUser_createsAuctionAndRedirects() {
         // Arrange
         Auction validAuction = new Auction();
         validAuction.setTitle("Valid Title");
         validAuction.setDescription("Valid Description");
         validAuction.setStartingPrice(new BigDecimal("100.00"));
 
+        Authentication authentication = mock(Authentication.class);
+        UserDetails userDetails = mock(UserDetails.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userDetails.getUsername()).thenReturn("testUser");
+        User loggedInUser = new User(); // Assuming User is your user model class
+        when(userService.getUserByUsername("testUser")).thenReturn(loggedInUser);
+
         // Act
-        String viewName = auctionController.createAuction(validAuction, model);
+        String viewName = auctionController.createAuction(validAuction, mock(Model.class), authentication);
 
         // Assert
-        verify(auctionService).createAuction(validAuction); // Expecting the valid auction to be passed to the service
+        verify(auctionService).createAuction(validAuction, loggedInUser); // Expecting the valid auction and logged-in user to be passed to the service
         assertEquals("redirect:/auctions", viewName, "Should redirect to the auctions list view.");
     }
 
@@ -180,18 +194,19 @@ public class AuctionControllerTest {
         assertEquals("redirect:/auctions", viewName, "Should redirect to the auctions list view.");
     }
 
-    // Test 9: createAuction() - Tests that an invalid auction is not created and redirects to an error view.
+    // Test 9: createAuction() - Tests creating an auction and redirecting to the auctions list with an unauthenticated user.
+
     @Test
-    public void createAuction_withInvalidData_returnsErrorView() {
+    public void createAuction_withoutAuthentication_redirectsToLogin() {
         // Arrange
-        Auction invalidAuction = new Auction(); // Assume this auction is invalid for some reason
+        Auction auction = new Auction();
 
         // Act
-        String viewName = auctionController.createAuction(invalidAuction, model);
+        String viewName = auctionController.createAuction(auction, mock(Model.class), null);
 
         // Assert
-        verify(auctionService, never()).createAuction(invalidAuction);
-        assertEquals("errorView", viewName, "Should return an error view name.");
+        verify(auctionService, never()).createAuction(any(Auction.class), any(User.class));
+        assertEquals("redirect:/login", viewName, "Should redirect to the login view when not authenticated.");
     }
 
     // Test 10: getEditForm() - Tests that an invalid auction ID returns a not found view.
