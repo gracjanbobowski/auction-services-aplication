@@ -1,5 +1,6 @@
 package com.example.auctionservicesaplication.controller;
 
+import com.example.auctionservicesaplication.message.AuctionNotFoundException;
 import com.example.auctionservicesaplication.model.Auction;
 import com.example.auctionservicesaplication.model.Category;
 import com.example.auctionservicesaplication.model.User;
@@ -15,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 //AuctionController: Obsługuje żądania związane z aukcjami.
@@ -37,24 +39,21 @@ public class AuctionController {
     // Pobiera i wyświetla listę wszystkich aukcji.
     @GetMapping
     public String getAllAuctions(Model model) {
-        List<Auction> auctions = auctionService.getAllAuction();
-        model.addAttribute("auctions", auctions);
+        model.addAttribute("auctions", auctionService.getAllAuction());
         return "auctions";
     }
     // Pobiera i wyświetla szczegóły danej aukcji.
     @GetMapping("/{auctionId}")
     public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(auctionId);
-        model.addAttribute("auction", auction);
+        model.addAttribute("auction", getAuctionOrThrow(auctionId));
         return "auctionDetails";
     }
     // Pobiera formularz do utworzenia nowej aukcji.
     @GetMapping("/create")
     public String getCreateForm(Model model) {
         model.addAttribute("auction", new Auction());
-        List<Category> categories = categoryService.getAllCategories();
-        model.addAttribute("categories", categories);
-        return "createdForm"; // Corrected template name
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "createdForm";
     }
     // Obsługuje proces utworzenia nowej aukcji.
     @PostMapping("/create")
@@ -82,25 +81,40 @@ public class AuctionController {
     // Pobiera formularz do edycji danej aukcji.
     @GetMapping("/{auctionId}/edit")
     public String getEditForm(@PathVariable BigDecimal auctionId, Model model) {
-        Auction auction = auctionService.getAuctionById(auctionId);
-        List<Category> categories = categoryService.getAllCategories();
+        Auction auction = getAuctionOrThrow(auctionId);
         model.addAttribute("auction", auction);
-        model.addAttribute("categories", categories);
+        model.addAttribute("categories", categoryService.getAllCategories());
+        if (auction.getStartTime() != null) {
+            model.addAttribute("formattedStartTime", auction.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        }
+        if (auction.getEndTime() != null) {
+            model.addAttribute("formattedEndTime", auction.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        }
         return "editFormAuction";
     }
     // Obsługuje proces edycji danej aukcji.
     @PostMapping("/{auctionId}/edit")
     public String editAuction(@ModelAttribute Auction auction, @PathVariable BigDecimal auctionId) {
-        if (auctionService.getAuctionById(auctionId) == null) {
-            return "auctionNotFound";
-        }
+        getAuctionOrThrow(auctionId); // Throws if not found
         auctionService.editAuction(auctionId, auction);
         return "redirect:/auctions";
     }
     // Obsługuje proces usunięcia danej aukcji.
     @GetMapping("/{auctionId}/delete")
     public String deleteAuction(@PathVariable BigDecimal auctionId) {
+        getAuctionOrThrow(auctionId); // Throws if not found
         auctionService.deleteAuction(auctionId);
         return "redirect:/auctions";
     }
+
+    @ExceptionHandler(AuctionNotFoundException.class)
+    public String handleAuctionNotFoundException(AuctionNotFoundException ex, Model model) {
+        model.addAttribute("errorMessage", ex.getMessage());
+        return "auctionNotFound";
+    }
+
+    private Auction getAuctionOrThrow(BigDecimal auctionId) {
+        return auctionService.getAuctionById(auctionId);
+    }
+
 }

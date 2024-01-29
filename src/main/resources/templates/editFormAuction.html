@@ -25,11 +25,12 @@
                required>
 
         <label for="startTime">Czas rozpoczęcia:</label>
-        <input type="datetime-local" id="startTime" name="startTime" th:field="*{startTime}" class="form-control"
-               required>
+        <input type="datetime-local" id="startTime" name="startTime"
+               th:value="${formattedStartTime}" class="form-control" required>
 
         <label for="endTime">Czas zakończenia:</label>
-        <input type="datetime-local" id="endTime" name="endTime" th:field="*{endTime}" class="form-control" required>
+        <input type="datetime-local" id="endTime" name="endTime"
+               th:value="${formattedEndTime}" class="form-control" required>
 
         <label for="category">Kategoria:</label>
         <select id="category" name="category" th:field="*{category.id}" class="form-control" required>
