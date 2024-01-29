@@ -49,6 +49,10 @@ public class UserService {
     }
 
     public void registerUser(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UserNotFoundException("Username already exists: " + user.getUsername());
         }

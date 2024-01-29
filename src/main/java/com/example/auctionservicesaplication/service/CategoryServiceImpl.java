@@ -20,6 +20,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
     @Override
     public void addCategory(Category category) {
+        if (category == null) {
+            throw new IllegalArgumentException("Category cannot be null");
+        }
         categoryRepository.save(category);
     }
 }
