@@ -21,16 +21,16 @@ public class Bid {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "auction_id")
+    @JoinColumn(name = "auction_id", nullable = false)
     private Auction auction;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User bidder;
 
-    @Column(name = "bidAmount")
-    private double bidAmount;
+    @Column(name = "bid_amount")
+    private BigDecimal bidAmount;
 
-    @Column(name = "bidTime")
+    @Column(name = "bidTime", nullable = false)
     private LocalDateTime bidTime;
 }

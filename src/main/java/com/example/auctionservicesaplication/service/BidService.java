@@ -14,45 +14,27 @@ import java.util.List;
 public class BidService {
 
     private final BidRepository bidRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public BidService(BidRepository bidRepository) {
+    public BidService(BidRepository bidRepository, EmailService emailService) {
         this.bidRepository = bidRepository;
-    }
-
-    public List<Bid> getAllBids() {
-        return bidRepository.findAll();
-    }
-
-    public Bid getBidById(BigDecimal bidId) {
-        return bidRepository.findById(bidId)
-                .orElseThrow(() -> new BidNotFoundException("Bid not found with ID: " + bidId));
+        this.emailService = emailService;
     }
 
     public void createBid(Bid bid) {
         bidRepository.save(bid);
     }
 
-    public void editBid(BigDecimal bidId, Bid editedBid) {
-        Bid existingBid = bidRepository.findById(bidId)
-                .orElseThrow(() -> new BidNotFoundException("Bid not found with ID: " + bidId));
-
-        existingBid.setBidTime(editedBid.getBidTime());
-        existingBid.setBidAmount(editedBid.getBidAmount());
-        existingBid.setAuction(editedBid.getAuction());
-        existingBid.setBidder(editedBid.getBidder());
-
-        bidRepository.save(existingBid);
-    }
-
-    public void deleteBid(BigDecimal bidId) {
-        Bid bidToDelete = bidRepository.findById(bidId)
-                .orElseThrow(() -> new BidNotFoundException("Bid not found with ID: " + bidId));
-
-        bidRepository.delete(bidToDelete);
-    }
-
     public List<Bid> getBidsByAuction(Auction auction) {
         return bidRepository.findByAuction(auction);
+    }
+
+    public void sendBidConfirmation(String to, String username, String auctionTitle) {
+        String subject = "Potwierdzenie licytacji";
+        String body = "Cześć " + username + "!\n" +
+                "Dziękujemy za złożenie oferty licytacyjnej na aukcję o tytule: " + auctionTitle + ".\n" +
+                "Życzymy powodzenia!";
+        emailService.sendEmail(to, subject, body);
     }
 }

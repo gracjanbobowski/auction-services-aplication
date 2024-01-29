@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class CategoryController {
 
     private final CategoryService categoryService;
-
+    // Konstruktor z wstrzykiwaniem zależności.
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
-
+    // Pobiera formularz do dodawania nowej kategorii.
     @GetMapping("/categories/add")
     public String showAddCategoryForm(Model model) {
         model.addAttribute("category", new Category());
         return "add-category";
     }
-
+    // Obsługuje proces dodawania nowej kategorii.
     @PostMapping("/categories/add")
     public String addCategory(@ModelAttribute Category category, Model model) {
         categoryService.addCategory(category);

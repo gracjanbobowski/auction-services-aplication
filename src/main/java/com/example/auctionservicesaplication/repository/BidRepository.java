@@ -13,4 +13,7 @@ import java.util.List;
 @Repository
 public interface BidRepository extends JpaRepository<Bid, BigDecimal> {
     List<Bid> findByAuction(Auction auction);
+    @Override
+    <S extends Bid> S save(S entity);
+
 }

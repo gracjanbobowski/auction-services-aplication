@@ -2,16 +2,26 @@ package com.example.auctionservicesaplication.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
 @Getter
+@Setter
 @Entity
 @Table(name = "roles")
 public class Role {
     @Id
-    @Column(name = "role_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "role_id")
+    private Long id;
 
-    private  String name;
+    @Column(name = "name")
+    private String name;
 
+    public Role() {
+    }
 
+    public Role(String name) {
+        this.name = name;
+    }
 }
+

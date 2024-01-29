@@ -12,6 +12,11 @@
 </header>
 <div class="container mt-3">
 
+  <!-- Dodaj poniższy fragment w miejscu, gdzie chcesz wyświetlić informację o zalogowanym użytkowniku -->
+  <div th:if="${loggedInUser != null}">
+    <p>Zalogowany użytkownik: <span th:text="${loggedInUser}"></span></p>
+  </div>
+
   <form th:action="@{/users/register}" th:object="${user}" method="post">
     <div class="form-group">
       <label for="username">Username:</label>
@@ -30,9 +35,10 @@
 
     <button type="submit" class="btn btn-success mt-2">Zarejestruj</button>
   </form>
+
   <!-- Dodaj poniższy komunikat -->
-  <div th:if="${param.success}" class="alert alert-success mt-3">
-    Rejestracja udana! Sprawdź swoją skrzynkę pocztową.
+  <div th:if="${param.success}" th:object="${user}" class="alert alert-success mt-3">
+    Rejestracja udana! Sprawdź swoją skrzynkę pocztową dla użytkownika: <span th:text="${user.username}"></span>
   </div>
 </div>
 <section class="container mt-3">
