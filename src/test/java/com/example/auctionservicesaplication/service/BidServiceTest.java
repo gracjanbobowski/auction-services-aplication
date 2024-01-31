@@ -29,8 +29,13 @@ public class BidServiceTest {
     @InjectMocks
     private BidService bidService;
 
+<<<<<<< HEAD
     @Test
         // Test sprawdza czy oferta jest zapisywana poprawnie.
+=======
+    // Test 1: createBid() - Tests that a bid is saved correctly.
+    @Test
+>>>>>>> origin/master
     void createBid_savesBidCorrectly() {
         // Arrange
         Bid newBid = new Bid();
@@ -50,8 +55,41 @@ public class BidServiceTest {
         assertEquals(fixedTime, capturedBid.getBidTime(), "The bid time should be as expected.");
     }
 
+<<<<<<< HEAD
     @Test
     // Test sprawdza, czy potwierdzenie oferty jest wysyłane poprawnie.
+=======
+    // Test 2: getBidsByAuction() - Tests retrieving all bids for a specific auction.
+    @Test
+    void getBidsByAuction_retrievesBidsForGivenAuction() {
+        // Arrange
+        Auction auction = new Auction();
+        auction.setId(new BigDecimal("1")); // Assuming the auction has an ID of 1
+
+        Bid bid1 = new Bid();
+        bid1.setId(1L);
+        bid1.setAuction(auction);
+        bid1.setBidAmount(new BigDecimal("100.00"));
+
+        Bid bid2 = new Bid();
+        bid2.setId(2L);
+        bid2.setAuction(auction);
+        bid2.setBidAmount(new BigDecimal("200.00"));
+
+        List<Bid> expectedBids = List.of(bid1, bid2);
+        when(bidRepository.findByAuction(auction)).thenReturn(expectedBids);
+
+        // Act
+        List<Bid> actualBids = bidService.getBidsByAuction(auction);
+
+        // Assert
+        assertEquals(expectedBids, actualBids, "The retrieved bids should match the expected list for the auction");
+        verify(bidRepository).findByAuction(auction);
+    }
+
+    // Test 3: sendBidConfirmation() - Tests that an email confirmation is sent correctly.
+    @Test
+>>>>>>> origin/master
     void sendBidConfirmation_sendsEmailCorrectly() {
         // Arrange
         String toEmail = "user@example.com";
@@ -75,4 +113,9 @@ public class BidServiceTest {
         assertEquals(expectedSubject, subjectCaptor.getValue(), "Email subject should be as expected.");
         assertEquals(expectedBody, bodyCaptor.getValue(), "Email body should be as expected.");
     }
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> origin/master

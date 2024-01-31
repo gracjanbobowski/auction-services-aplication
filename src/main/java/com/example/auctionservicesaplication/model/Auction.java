@@ -18,7 +18,7 @@ public class Auction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
-    private Long id;
+    private BigDecimal id;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")  // adjust the column name accordingly

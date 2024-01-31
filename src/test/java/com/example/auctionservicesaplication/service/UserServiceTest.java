@@ -1,10 +1,17 @@
 package com.example.auctionservicesaplication.service;
 
+<<<<<<< HEAD
 import com.example.auctionservicesaplication.message.UserNotFoundException;
+=======
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+>>>>>>> origin/master
 import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.RoleRepository;
 import com.example.auctionservicesaplication.repository.UserRepository;
+<<<<<<< HEAD
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,13 +22,32 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+=======
+import com.example.auctionservicesaplication.service.UserService;
+import com.example.auctionservicesaplication.message.UserNotFoundException;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
+>>>>>>> origin/master
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+=======
+>>>>>>> origin/master
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
@@ -38,12 +64,21 @@ public class UserServiceTest {
     private UserService userService;
 
 
+<<<<<<< HEAD
     @Test
     // Test 1: getAllUsers() - Testuje, czy wszystkie użytkowniki są pobierane.
     public void getAllUsers_retrievesAllUsers() {
         // Arrange
         List<User> expectedUsers = new ArrayList<>();
         expectedUsers.add(new User());
+=======
+    // Test 1: getAllUsers() - Tests that all users are retrieved.
+    @Test
+    public void getAllUsers_retrievesAllUsers() {
+        // Arrange
+        List<User> expectedUsers = new ArrayList<>();
+        expectedUsers.add(new User()); // Add mock Users as needed
+>>>>>>> origin/master
         when(userRepository.findAll()).thenReturn(expectedUsers);
 
         // Act
@@ -53,8 +88,13 @@ public class UserServiceTest {
         assertEquals(expectedUsers, actualUsers, "The returned users should match the expected ones");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 2: getUserById() - Testuje pobieranie konkretnego użytkownika na podstawie identyfikatora.
+=======
+    // Test 2: getUserById() - Tests retrieving a specific user by their ID.
+    @Test
+>>>>>>> origin/master
     public void getUserById_withValidId_retrievesCorrectUser() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -69,8 +109,13 @@ public class UserServiceTest {
         assertEquals(expectedUser, actualUser, "The user should be found with the correct ID");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 3: getUserById() - Rzuca wyjątek, gdy nie odnaleziono identyfikatora.
+=======
+    // Test 3: getUserById() - Throws exception when ID is not found.
+    @Test
+>>>>>>> origin/master
     public void getUserById_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -81,8 +126,13 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 4: registerUser() - Zapisuje nowego użytkownika z poprawnymi danymi.
+=======
+    // Test 4: registerUser() - Saves a new user with valid data.
+    @Test
+>>>>>>> origin/master
     public void registerUser_withValidData_savesUser() {
         // Arrange
         User newUser = new User();
@@ -100,8 +150,21 @@ public class UserServiceTest {
         verify(userRepository).save(newUser);
     }
 
+<<<<<<< HEAD
     @Test
     // Test 5: editUser() - Aktualizuje użytkownika o poprawnym identyfikatorze i danych.
+=======
+    // Test 5: registerUser() - Throws exception when trying to save a null user.
+    @Test
+    public void registerUser_withNullUser_throwsException() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(null),
+                "Should throw IllegalArgumentException when trying to save a null user.");
+    }
+
+    // Test 6: editUser() - Updates a user with valid ID and data.
+    @Test
+>>>>>>> origin/master
     public void editUser_withValidId_updatesUserCorrectly() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -123,8 +186,13 @@ public class UserServiceTest {
         assertEquals("newUsername", savedUser.getUsername(), "The username should be updated to the new value.");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 6: editUser() - Rzuca wyjątek, gdy nie znaleziono użytkownika o podanym identyfikatorze.
+=======
+    // Test 7: editUser() - Throws exception when the user ID is not found.
+    @Test
+>>>>>>> origin/master
     public void editUser_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -135,8 +203,13 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 7: deleteUser() - Usuwa użytkownika o poprawnym identyfikatorze.
+=======
+    // Test 8: deleteUser() - Deletes a user with a valid ID.
+    @Test
+>>>>>>> origin/master
     public void deleteUser_withValidId_deletesUser() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -151,8 +224,13 @@ public class UserServiceTest {
         verify(userRepository).delete(userToDelete);
     }
 
+<<<<<<< HEAD
     @Test
     // Test 8: deleteUser() - Rzuca wyjątek, gdy próbuje usunąć użytkownika o niepoprawnym identyfikatorze.
+=======
+    // Test 9: deleteUser() - Throws exception when trying to delete a user with an invalid ID.
+    @Test
+>>>>>>> origin/master
     public void deleteUser_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -163,8 +241,13 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 9: assignAdminRole() - Testuje, czy rola administratora jest pomyślnie dodawana użytkownikowi, który jej nie posiada.
+=======
+    // Test 10: assignAdminRole() - Test if the admin role is successfully added to a user who doesn't have it.
+    @Test
+>>>>>>> origin/master
     public void assignAdminRole_addsRoleToUser() {
         // Arrange
         User user = new User();
@@ -181,8 +264,13 @@ public class UserServiceTest {
         verify(userRepository).save(user);
     }
 
+<<<<<<< HEAD
     @Test
     // Test 10: assignAdminRole() - Testuje, czy metoda nie dodaje roli administratora, jeśli użytkownik ją już posiada.
+=======
+    // Test 11: assignAdminRole() - Test to ensure the method doesn't add the admin role if the user already has it.
+    @Test
+>>>>>>> origin/master
     public void assignAdminRole_doesNotAddRoleIfAlreadyPresent() {
         // Arrange
         Role adminRole = new Role("ROLE_ADMIN");
@@ -201,8 +289,13 @@ public class UserServiceTest {
         verify(userRepository, never()).save(user);
     }
 
+<<<<<<< HEAD
     @Test
     // Test 11: getUserByUsername() - Testuje, czy metoda prawidłowo pobiera użytkownika po nazwie użytkownika.
+=======
+    // Test 12: getUserByUsername() - Test if the method retrieves a user correctly by their username.
+    @Test
+>>>>>>> origin/master
     public void getUserByUsername_retrievesUser() {
         // Arrange
         String username = "testUser";
@@ -218,8 +311,13 @@ public class UserServiceTest {
         assertEquals(expectedUser, actualUser, "Should retrieve the correct user");
     }
 
+<<<<<<< HEAD
     @Test
     // Test 13: loadUserByUsername() - Testuje, czy metoda prawidłowo wczytuje informacje o użytkowniku (UserDetails) dla podanej nazwy użytkownika.
+=======
+    // Test 13: loadUserByUsername() - Test if the method loads UserDetails correctly for a given username.
+    @Test
+>>>>>>> origin/master
     public void loadUserByUsername_loadsUserDetails() {
         // Arrange
         String username = "testUser";
