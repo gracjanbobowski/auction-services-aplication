@@ -4,15 +4,15 @@ import com.example.auctionservicesaplication.model.Category;
 import com.example.auctionservicesaplication.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,8 +26,8 @@ public class CategoryServiceImplTest {
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
-    // Test 1: getAllCategories() - Retrieves all categories.
     @Test
+    // Test 1: getAllCategories() - Pobiera wszystkie kategorie.
     public void getAllCategories_retrievesAllCategories() {
         // Arrange
         List<Category> expectedCategories = new ArrayList<>();
@@ -43,8 +43,9 @@ public class CategoryServiceImplTest {
         verify(categoryRepository).findAll(); // Verifies that findAll was called
     }
 
-    // Test 2: addCategory() - Saves a new category.
+
     @Test
+    // Test 2: addCategory() - Zapisuje nową kategorię.
     public void addCategory_savesNewCategory() {
         // Arrange
         Category newCategory = new Category(null, null, "Electronics", "Gadgets and electronic devices.");
@@ -62,8 +63,9 @@ public class CategoryServiceImplTest {
         assertEquals("Electronics", savedCategory.getCategoryName());
     }
 
-    // Test 3: addCategory() with null Category - Throws Exception.
+
     @Test
+    // Test 3: getAllCategories() when no categories - Zwraca pustą listę, gdy brak kategorii.
     public void addCategory_withNullCategory_throwsException() {
         // Arrange
         Category nullCategory = null;
@@ -73,8 +75,8 @@ public class CategoryServiceImplTest {
                 "Should throw IllegalArgumentException when trying to save a null category.");
     }
 
-    // Test 4: getAllCategories() when no categories - Returns empty list.
     @Test
+    // Test 4: getAllCategories() when no categories - Zwraca pustą listę.
     public void getAllCategories_whenNoCategories_returnsEmptyList() {
         // Arrange
         when(categoryRepository.findAll()).thenReturn(Collections.emptyList());
@@ -88,3 +90,4 @@ public class CategoryServiceImplTest {
     }
 
 }
+

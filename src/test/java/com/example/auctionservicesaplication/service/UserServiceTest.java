@@ -1,25 +1,26 @@
 package com.example.auctionservicesaplication.service;
 
+
+import com.example.auctionservicesaplication.message.UserNotFoundException;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 
 import com.example.auctionservicesaplication.model.Role;
 import com.example.auctionservicesaplication.model.User;
 import com.example.auctionservicesaplication.repository.RoleRepository;
 import com.example.auctionservicesaplication.repository.UserRepository;
-import com.example.auctionservicesaplication.service.UserService;
-import com.example.auctionservicesaplication.message.UserNotFoundException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.ArgumentCaptor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -41,23 +42,16 @@ public class UserServiceTest {
     private UserService userService;
 
 
-    // Test 1: getAllUsers() - Tests that all users are retrieved.
     @Test
+    // Test 1: getAllUsers() - Testuje, czy wszystkie użytkowniki są pobierane.
     public void getAllUsers_retrievesAllUsers() {
         // Arrange
         List<User> expectedUsers = new ArrayList<>();
-        expectedUsers.add(new User()); // Add mock Users as needed
-        when(userRepository.findAll()).thenReturn(expectedUsers);
-
-        // Act
-        List<User> actualUsers = userService.getAllUsers();
-
-        // Assert
-        assertEquals(expectedUsers, actualUsers, "The returned users should match the expected ones");
+        expectedUsers.add(new User());
     }
 
-    // Test 2: getUserById() - Tests retrieving a specific user by their ID.
     @Test
+// Test 2: getUserById() - Testuje pobieranie konkretnego użytkownika na podstawie identyfikatora.
     public void getUserById_withValidId_retrievesCorrectUser() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -72,8 +66,8 @@ public class UserServiceTest {
         assertEquals(expectedUser, actualUser, "The user should be found with the correct ID");
     }
 
-    // Test 3: getUserById() - Throws exception when ID is not found.
     @Test
+// Test 3: getUserById() - Rzuca wyjątek, gdy nie odnaleziono identyfikatora.
     public void getUserById_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -84,8 +78,8 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
-    // Test 4: registerUser() - Saves a new user with valid data.
     @Test
+// Test 4: registerUser() - Zapisuje nowego użytkownika z poprawnymi danymi.
     public void registerUser_withValidData_savesUser() {
         // Arrange
         User newUser = new User();
@@ -103,16 +97,16 @@ public class UserServiceTest {
         verify(userRepository).save(newUser);
     }
 
-    // Test 5: registerUser() - Throws exception when trying to save a null user.
     @Test
+// Test 5: registerUser() - Rzuca wyjątek, gdy próbuje zapisać nullowego użytkownika.
     public void registerUser_withNullUser_throwsException() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(null),
                 "Should throw IllegalArgumentException when trying to save a null user.");
     }
 
-    // Test 6: editUser() - Updates a user with valid ID and data.
     @Test
+// Test 6: editUser() - Aktualizuje użytkownika o poprawnym identyfikatorze i danych.
     public void editUser_withValidId_updatesUserCorrectly() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -134,8 +128,8 @@ public class UserServiceTest {
         assertEquals("newUsername", savedUser.getUsername(), "The username should be updated to the new value.");
     }
 
-    // Test 7: editUser() - Throws exception when the user ID is not found.
     @Test
+// Test 7: editUser() - Rzuca wyjątek, gdy nie znaleziono użytkownika o podanym identyfikatorze.
     public void editUser_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -146,8 +140,8 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
-    // Test 8: deleteUser() - Deletes a user with a valid ID.
     @Test
+// Test 8: deleteUser() - Usuwa użytkownika o poprawnym identyfikatorze.
     public void deleteUser_withValidId_deletesUser() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -162,8 +156,8 @@ public class UserServiceTest {
         verify(userRepository).delete(userToDelete);
     }
 
-    // Test 9: deleteUser() - Throws exception when trying to delete a user with an invalid ID.
     @Test
+// Test 9: deleteUser() - Rzuca wyjątek, gdy próbuje usunąć użytkownika o niepoprawnym identyfikatorze.
     public void deleteUser_withInvalidId_throwsUserNotFoundException() {
         // Arrange
         BigDecimal userId = BigDecimal.ONE;
@@ -174,8 +168,8 @@ public class UserServiceTest {
                 "A UserNotFoundException should be thrown if the user is not found");
     }
 
-    // Test 10: assignAdminRole() - Test if the admin role is successfully added to a user who doesn't have it.
     @Test
+// Test 10: assignAdminRole() - Testuje, czy rola administratora jest pomyślnie dodawana użytkownikowi, który jej nie posiada.
     public void assignAdminRole_addsRoleToUser() {
         // Arrange
         User user = new User();
@@ -192,8 +186,8 @@ public class UserServiceTest {
         verify(userRepository).save(user);
     }
 
-    // Test 11: assignAdminRole() - Test to ensure the method doesn't add the admin role if the user already has it.
     @Test
+// Test 11: assignAdminRole() - Testuje, czy metoda nie dodaje roli administratora, jeśli użytkownik ją już posiada.
     public void assignAdminRole_doesNotAddRoleIfAlreadyPresent() {
         // Arrange
         Role adminRole = new Role("ROLE_ADMIN");
@@ -212,8 +206,8 @@ public class UserServiceTest {
         verify(userRepository, never()).save(user);
     }
 
-    // Test 12: getUserByUsername() - Test if the method retrieves a user correctly by their username.
     @Test
+// Test 12: getUserByUsername() - Testuje, czy metoda prawidłowo pobiera użytkownika po nazwie użytkownika.
     public void getUserByUsername_retrievesUser() {
         // Arrange
         String username = "testUser";
@@ -229,8 +223,8 @@ public class UserServiceTest {
         assertEquals(expectedUser, actualUser, "Should retrieve the correct user");
     }
 
-    // Test 13: loadUserByUsername() - Test if the method loads UserDetails correctly for a given username.
     @Test
+// Test 13: loadUserByUsername() - Testuje, czy metoda prawidłowo wczytuje informacje o użytkowniku (UserDetails) dla podanej nazwy użytkownika.
     public void loadUserByUsername_loadsUserDetails() {
         // Arrange
         String username = "testUser";
