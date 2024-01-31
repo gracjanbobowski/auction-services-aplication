@@ -32,6 +32,7 @@ public class AuctionService {
         return auctionRepository.findAll();
     }
 
+
     public Auction getAuctionById(BigDecimal auctionId) {
         return auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
