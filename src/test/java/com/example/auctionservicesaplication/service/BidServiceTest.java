@@ -29,8 +29,8 @@ public class BidServiceTest {
     @InjectMocks
     private BidService bidService;
 
+    // Test 1: createBid() - Tests that a bid is saved correctly.
     @Test
-    // Test 1: createBid() - Testuje, czy oferta jest poprawnie zapisywana.
     void createBid_savesBidCorrectly() {
         // Arrange
         Bid newBid = new Bid();
@@ -50,8 +50,8 @@ public class BidServiceTest {
         assertEquals(fixedTime, capturedBid.getBidTime(), "The bid time should be as expected.");
     }
 
+    // Test 2: getBidsByAuction() - Tests retrieving all bids for a specific auction.
     @Test
-    // Test 2: getBidsByAuction() - Testuje pobieranie wszystkich ofert dla konkretnej aukcji.
     void getBidsByAuction_retrievesBidsForGivenAuction() {
         // Arrange
         Auction auction = new Auction();
@@ -78,9 +78,8 @@ public class BidServiceTest {
         verify(bidRepository).findByAuction(auction);
     }
 
-
+    // Test 3: sendBidConfirmation() - Tests that an email confirmation is sent correctly.
     @Test
-        // Test 3: sendBidConfirmation() - Testuje poprawne wysyłanie potwierdzenia oferty za pośrednictwem e-maila.
     void sendBidConfirmation_sendsEmailCorrectly() {
         // Arrange
         String toEmail = "user@example.com";
@@ -105,6 +104,4 @@ public class BidServiceTest {
         assertEquals(expectedBody, bodyCaptor.getValue(), "Email body should be as expected.");
     }
 }
-
-
 
