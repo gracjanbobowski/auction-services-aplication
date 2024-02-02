@@ -8,12 +8,15 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+// Repository for managing Bid entities in the database.
 
-//BidRepository: Repozytorium do zarządzania ofertami licytacyjnymi w bazie danych.
+// The JpaRepository interface from Spring Data provides basic CRUD operations (Create, Read, Update, Delete).
 @Repository
 public interface BidRepository extends JpaRepository<Bid, BigDecimal> {
+    // Method to find bids associated with a specific auction.
     List<Bid> findByAuction(Auction auction);
+
+    // Override the save method to handle Bid entities.
     @Override
     <S extends Bid> S save(S entity);
-
 }

@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 
+// Repository for managing Category entities in the database.
 
-//CategoryRepository: Repozytorium do zarządzania kategoriami w bazie danych.
+// The JpaRepository interface from Spring Data provides basic CRUD operations (Create, Read, Update, Delete).
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, BigDecimal> {
-    // Dodatkowe metody związane z bazą danych, jeśli są potrzebne
+
 }

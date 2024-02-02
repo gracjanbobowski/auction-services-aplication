@@ -8,8 +8,11 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 
-//AuctionRepository: Repozytorium do zarządzania encjami aukcji w bazie danych.
+// Repository for managing Auction entities in the database.
+
+// The JpaRepository interface from Spring Data provides basic CRUD operations (Create, Read, Update, Delete).
 @Repository
 public interface AuctionRepository extends JpaRepository<Auction, BigDecimal> {
+    // Method to find auctions by the seller (user).
     List<Auction> findBySeller(User seller);
 }

@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 
+// Repository for managing TransactionRating entities in the database.
 
-//TransactionRatingRepository: Repozytorium do zarządzania ocenami transakcji w bazie danych.
+// The JpaRepository interface from Spring Data provides basic CRUD operations (Create, Read, Update, Delete).
 @Repository
 public interface TransactionRatingRepository extends JpaRepository<TransactionRating, BigDecimal> {
-    // Dodatkowe metody związane z bazą danych, jeśli są potrzebne
+
 }

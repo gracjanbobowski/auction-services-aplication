@@ -19,16 +19,17 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-//AuctionController: Obsługuje żądania związane z aukcjami.
+// The AuctionController handles all auction-related requests.
 @Controller
 @RequestMapping("/auctions")
 public class AuctionController {
 
+    // Service dependencies are injected here through the constructor.
     private final AuctionService auctionService;
     private final CategoryService categoryService;
     private final BidService bidService;
     private final UserService userService;
-    // Iniekcja zależności poprzez konstruktor.
+
     @Autowired
     public AuctionController(AuctionService auctionService, CategoryService categoryService, BidService bidService, UserService userService) {
         this.auctionService = auctionService;
@@ -36,49 +37,54 @@ public class AuctionController {
         this.bidService = bidService;
         this.userService = userService;
     }
-    // Pobiera i wyświetla listę wszystkich aukcji.
+
+    // Fetches and displays a list of all auctions.
     @GetMapping
     public String getAllAuctions(Model model) {
         model.addAttribute("auctions", auctionService.getAllAuction());
         return "auctions";
     }
-    // Pobiera i wyświetla szczegóły danej aukcji.
+
+    // Fetches and displays details for a specific auction.
     @GetMapping("/{auctionId}")
     public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
         model.addAttribute("auction", getAuctionOrThrow(auctionId));
         return "auctionDetails";
     }
-    // Pobiera formularz do utworzenia nowej aukcji.
+
+    // Retrieves the form to create a new auction.
     @GetMapping("/create")
     public String getCreateForm(Model model) {
         model.addAttribute("auction", new Auction());
         model.addAttribute("categories", categoryService.getAllCategories());
         return "createdForm";
     }
-    // Obsługuje proces utworzenia nowej aukcji.
+
+    // Handles the process of creating a new auction.
     @PostMapping("/create")
     public String createAuction(@ModelAttribute Auction auction, Model model, Authentication authentication) {
-        // Sprawdź, czy użytkownik jest zalogowany
+        // Check if the user is authenticated
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String loggedInUsername = userDetails.getUsername();
 
-            // Pobierz obiekt User na podstawie nazwy użytkownika
+            // Retrieve the User object based on the username
             User loggedInUser = userService.getUserByUsername(loggedInUsername);
 
-            // Utwórz aukcję, przekazując obiekt User
+            // Create an auction, passing the User object
             auctionService.createAuction(auction, loggedInUser);
 
-            // Dodaj informacje o zalogowanym użytkowniku do modelu
+            // Add information about the logged-in user to the model
             model.addAttribute("loggedInUser", loggedInUsername);
 
             return "redirect:/auctions";
         } else {
-            // Obsłuż przypadki, gdy użytkownik nie jest zalogowany
-            return "redirect:/login"; // Przekieruj na stronę logowania lub obsłuż inaczej
+            // Handle cases when the user is not authenticated
+            return "redirect:/login"; // Redirect to the login page or handle otherwise
         }
     }
-    // Pobiera formularz do edycji danej aukcji.
+
+    // Retrieves the form for editing an existing auction.
     @GetMapping("/{auctionId}/edit")
     public String getEditForm(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = getAuctionOrThrow(auctionId);
@@ -92,29 +98,32 @@ public class AuctionController {
         }
         return "editFormAuction";
     }
-    // Obsługuje proces edycji danej aukcji.
+
+    // Handles the process of updating an existing auction.
     @PostMapping("/{auctionId}/edit")
     public String editAuction(@ModelAttribute Auction auction, @PathVariable BigDecimal auctionId) {
-        getAuctionOrThrow(auctionId); // Throws if not found
+        getAuctionOrThrow(auctionId); // Ensure the auction exists, or throw an exception
         auctionService.editAuction(auctionId, auction);
         return "redirect:/auctions";
     }
-    // Obsługuje proces usunięcia danej aukcji.
+
+    // Handles the process of deleting an existing auction.
     @GetMapping("/{auctionId}/delete")
     public String deleteAuction(@PathVariable BigDecimal auctionId) {
-        getAuctionOrThrow(auctionId); // Throws if not found
+        getAuctionOrThrow(auctionId); // Ensure the auction exists, or throw an exception
         auctionService.deleteAuction(auctionId);
         return "redirect:/auctions";
     }
 
+    // Handles exceptions when an auction is not found, displaying an error message.
     @ExceptionHandler(AuctionNotFoundException.class)
     public String handleAuctionNotFoundException(AuctionNotFoundException ex, Model model) {
         model.addAttribute("errorMessage", ex.getMessage());
         return "auctionNotFound";
     }
 
+    // Helper method to fetch an auction by its ID or throw an exception if not found.
     private Auction getAuctionOrThrow(BigDecimal auctionId) {
         return auctionService.getAuctionById(auctionId);
     }
-
 }
