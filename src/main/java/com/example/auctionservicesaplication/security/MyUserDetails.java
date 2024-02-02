@@ -10,16 +10,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-
+// Custom UserDetails implementation to integrate with Spring Security.
 public class MyUserDetails implements UserDetails {
     private User user;
 
+    // Constructor to initialize with a user.
     public MyUserDetails(User user) {
         this.user = user;
     }
 
+    // Returns a collection of GrantedAuthorities for the user's roles.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<Role> roles = user.getRoles();
@@ -31,6 +32,7 @@ public class MyUserDetails implements UserDetails {
         return authorities;
     }
 
+    // Other standard methods required by UserDetails interface.
     @Override
     public String getPassword() {
         return user.getPassword();

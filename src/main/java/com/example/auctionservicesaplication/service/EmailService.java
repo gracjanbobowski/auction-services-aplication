@@ -5,17 +5,18 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-
-//UserService: Logika biznesowa związana z użytkownikami.
+// Service class for handling email notifications (e.g., registration confirmations).
 @Service
 public class EmailService {
     private final JavaMailSender javaMailSender;
 
+    // Constructor for dependency injection of the JavaMailSender.
     @Autowired
     public EmailService(JavaMailSender javaMailSender) {
         this.javaMailSender = javaMailSender;
     }
 
+    // Sends a registration confirmation email.
     public void sendRegistrationConfirmation(String to, String username) {
         String subject = "Potwierdzenie rejestracji w serwisie aukcyjnym";
         String body = "Witaj " + username + "!\n" +
@@ -24,7 +25,7 @@ public class EmailService {
         sendEmail(to, subject, body);
     }
 
-    // Change private to public or default (package-private)
+    // Method to send an email with the given parameters.
     public void sendEmail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -33,4 +34,3 @@ public class EmailService {
         javaMailSender.send(message);
     }
 }
-

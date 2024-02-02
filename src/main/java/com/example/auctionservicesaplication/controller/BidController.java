@@ -21,16 +21,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Controller that manages bid-related operations in the application.
 @Controller
 @RequestMapping("/bids")
 public class BidController {
 
+    // Dependency injection through the constructor for required services.
     private final AuctionService auctionService;
     private final BidService bidService;
     private final UserService userService;
     private final EmailService emailService;
 
-    // Iniekcja zależności poprzez konstruktor.
     @Autowired
     public BidController(AuctionService auctionService, BidService bidService, UserService userService, EmailService emailService) {
         this.auctionService = auctionService;
@@ -38,14 +39,16 @@ public class BidController {
         this.userService = userService;
         this.emailService = emailService;
     }
-    // Pobiera i wyświetla listę wszystkich aukcji.
+
+    // Retrieves and displays a list of all auctions for bidding.
     @GetMapping
     public String getAllBids(Model model) {
         List<Auction> auctions = auctionService.getAllAuction();
         model.addAttribute("auctions", auctions);
         return "bids";
     }
-    // Pobiera i wyświetla oferty dla konkretnej aukcji.
+
+    // Fetches and displays the bids for a specific auction.
     @GetMapping("/{auctionId}/bids")
     public String getAuctionBids(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
@@ -54,14 +57,16 @@ public class BidController {
         model.addAttribute("bids", bids);
         return "bids";
     }
-    // Pobiera i wyświetla szczegóły danej aukcji.
+
+    // Fetches and displays details for a specific auction.
     @GetMapping("/{auctionId}")
     public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
         return "auctionDetails";
     }
-    // Pobiera i wyświetla oferty dla danej aukcji wraz z aktualną ceną.
+
+    // Fetches and displays the bids for a specific auction along with the current highest bid.
     @GetMapping("/{auctionId}/bidsForAuction")
     public String getBidsForAuction(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
@@ -72,65 +77,80 @@ public class BidController {
         model.addAttribute("currentBidAmount", currentBidAmount);
         return "bidsForAuction";
     }
-    // Pobiera formularz do złożenia nowej oferty na aukcji.
+
+    // Fetches the form for placing a new bid on an auction.
     @GetMapping("/{auctionId}/details/placeBid")
     public String getPlaceBidForm(@PathVariable BigDecimal auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
-        // Tworzy nową ofertę i przekazuje ją do formularza.
+
+        // Create a new bid instance and pass it to the form.
         Bid newBid = new Bid();
         model.addAttribute("newBid", newBid);
-        // Pobiera aktualną cenę aukcji.
+
+        // Retrieve the current auction price.
         BigDecimal currentAuctionPrice = auctionService.getHighestBidAmount(auction);
         model.addAttribute("currentAuctionPrice", currentAuctionPrice);
 
         return "placeBidForm";
     }
-    // Obsługuje proces składania nowej oferty na aukcji.
+
+    // Handles the process of placing a new bid on an auction.
     @PostMapping("/{auctionId}/placeBid")
     public String placeBid(
             @PathVariable BigDecimal auctionId,
             @ModelAttribute("newBid") @Valid Bid newBid,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
-        // Pobiera aukcję i bieżące dane autentykacji.
+
+        // Retrieve auction and current authentication details.
         Auction auction = auctionService.getAuctionById(auctionId);
-        // Waliduje formularz oferty.
+
+        // Validate the bid form.
         if (bindingResult.hasErrors()) {
             return "placeBidForm";
         }
-        // Pobiera informacje o licytującym.
+
+        // Retrieve bidder information.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String bidderUsername = authentication.getName();
         User bidder = userService.getUserByUsername(bidderUsername);
-        // Ustawia dane nowej oferty.
+
+        // Set details for the new bid.
         newBid.setAuction(auction);
         newBid.setBidder(bidder);
         newBid.setBidTime(LocalDateTime.now());
-        // Waliduje ofertę pod kątem poprawności.
+
+        // Validate the bid for correctness.
         validateBid(newBid, auction, bindingResult);
-        // Jeśli są błędy, zwraca formularz.
+
+        // If there are errors, return to the form.
         if (bindingResult.hasErrors()) {
             return "placeBidForm";
         }
-        // Zapisuje ofertę w bazie danych.
+
+        // Save the bid to the database.
         bidService.createBid(newBid);
-        // Aktualizuje cenę aukcji, jeśli nowa oferta jest wyższa.
+
+        // Update auction price if the new bid is higher.
         BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
         if (newBid.getBidAmount().compareTo(highestBidAmount) > 0) {
             auction.setCurrentPrice(newBid.getBidAmount());
             auctionService.updateAuction(auction);
 
-            // Wysyła potwierdzenie licytacji na adres e-mail sprzedawcy.
+            // Send a bid confirmation to the seller's email.
             bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
         }
-        // Przekierowuje na stronę z ofertami dla danej aukcji.
+
+        // Redirect to the bids page for the auction.
         return "redirect:/bids/" + auctionId + "/bidsForAuction";
     }
-    // Prywatna metoda do walidacji oferty.
+
+    // Private method for bid validation.
     private void validateBid(Bid newBid, Auction auction, BindingResult bindingResult) {
         List<Bid> bids = bidService.getBidsByAuction(auction);
-    // Sprawdza, czy nowa oferta jest wyższa niż aktualnie najwyższa oferta.
+
+        // Check if the new bid is higher than the current highest bid.
         if (bids.stream().anyMatch(bid -> bid.getBidAmount().compareTo(newBid.getBidAmount()) >= 0)) {
             bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current highest bid.");
         }
