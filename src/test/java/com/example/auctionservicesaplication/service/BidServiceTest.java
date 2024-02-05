@@ -55,7 +55,7 @@ public class BidServiceTest {
     void getBidsByAuction_retrievesBidsForGivenAuction() {
         // Arrange
         Auction auction = new Auction();
-        auction.setId(new BigDecimal("1")); // Assuming the auction has an ID of 1
+        auction.setId(1L); // Assuming the auction has an ID of 1
 
         Bid bid1 = new Bid();
         bid1.setId(1L);

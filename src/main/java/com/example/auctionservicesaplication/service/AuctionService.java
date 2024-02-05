@@ -33,9 +33,13 @@ public class AuctionService {
     }
 
     // Retrieves an auction by its ID or throws an exception if not found.
-    public Auction getAuctionById(BigDecimal auctionId) {
+    public Auction getAuctionById(Long auctionId) {
         return auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
+    }
+
+    public List<Auction> getAuctionsBySeller(User seller) {
+        return auctionRepository.findBySeller(seller);
     }
 
     // Creates a new auction and assigns the seller.
@@ -45,16 +49,16 @@ public class AuctionService {
         }
 
         auction.setSeller(seller);
+        auction.setCurrentPrice(auction.getStartingPrice());
         return auctionRepository.save(auction);
     }
 
-    // Calculates the highest bid amount for a given auction.
+    // Retrieves the highest bid amount for a specific auction
     public BigDecimal getHighestBidAmount(Auction auction) {
-        List<Bid> bids = bidService.getBidsByAuction(auction);
-        return bids.stream()
+        return auction.getBids().stream()
                 .map(Bid::getBidAmount)
                 .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
+                .orElse(BigDecimal.ZERO); // Return 0 if no bids are present
     }
 
     // Updates an existing auction.
@@ -63,11 +67,11 @@ public class AuctionService {
     }
 
     // Edits an auction by updating its details.
-    public void editAuction(BigDecimal auctionId, Auction editedAuction) {
+    public void editAuction(Long auctionId, Auction editedAuction) {
         Auction existingAuction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
 
-        // Only update if it's not null in the editedAuction
+        // Update fields if they are not null in the editedAuction
         if (editedAuction.getCategory() != null) {
             existingAuction.setCategory(editedAuction.getCategory());
         }
@@ -77,12 +81,6 @@ public class AuctionService {
         if (editedAuction.getDescription() != null) {
             existingAuction.setDescription(editedAuction.getDescription());
         }
-        if (editedAuction.getStartingPrice() != null) {
-            existingAuction.setStartingPrice(editedAuction.getStartingPrice());
-        }
-        if (editedAuction.getCurrentPrice() != null) {
-            existingAuction.setCurrentPrice(editedAuction.getCurrentPrice());
-        }
         if (editedAuction.getStartTime() != null) {
             existingAuction.setStartTime(editedAuction.getStartTime());
         }
@@ -90,20 +88,43 @@ public class AuctionService {
             existingAuction.setEndTime(editedAuction.getEndTime());
         }
 
+        // Check if there are any bids
+        if (existingAuction.getBids() == null || existingAuction.getBids().isEmpty()) {
+            // If no bids, set both starting and current price to edited starting price or retain existing if not edited
+            BigDecimal newStartingPrice = editedAuction.getStartingPrice() != null ? editedAuction.getStartingPrice() : existingAuction.getStartingPrice();
+            existingAuction.setStartingPrice(newStartingPrice);
+            existingAuction.setCurrentPrice(newStartingPrice);
+        } else {
+            // If there are bids, apply the specified logic
+            if (editedAuction.getStartingPrice() != null) {
+                existingAuction.setStartingPrice(editedAuction.getStartingPrice());
+                BigDecimal highestBid = getHighestBidAmount(existingAuction);
+                BigDecimal newCurrentPrice = highestBid.compareTo(existingAuction.getStartingPrice()) > 0 ? highestBid : existingAuction.getStartingPrice();
+                existingAuction.setCurrentPrice(newCurrentPrice);
+            }
+        }
+
         auctionRepository.save(existingAuction);
     }
 
+
     // Deletes an auction by its ID.
-    public void deleteAuction(BigDecimal auctionId) {
+    public void deleteAuction(Long auctionId) {
         Auction auctionToDelete = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionNotFoundException("Auction not found"));
-
         auctionRepository.delete(auctionToDelete);
     }
 
     // Updates the auction with a new bid and saves it.
     public void updateAuctionWithBid(Auction auction, Bid newBid) {
-        auction.setCurrentPrice(newBid.getBidAmount());
+        // Initialize current price if null
+        if (auction.getCurrentPrice() == null) {
+            auction.setCurrentPrice(BigDecimal.ZERO);
+        }
+
+        if (newBid.getBidAmount().compareTo(auction.getCurrentPrice()) > 0) {
+            auction.setCurrentPrice(newBid.getBidAmount());
+        }
         auctionRepository.save(auction);
     }
 

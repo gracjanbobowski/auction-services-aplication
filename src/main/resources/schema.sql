@@ -1,102 +1,81 @@
+-- Auction Table
+CREATE TABLE IF NOT EXISTS auctions (
+                                        auction_id BIGINT NOT NULL AUTO_INCREMENT,
+                                        user_id BIGINT,
+                                        category_id BIGINT NOT NULL,
+                                        title VARCHAR(255) NOT NULL,
+                                        description VARCHAR(255) NOT NULL,
+                                        starting_price DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+                                        current_price DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+                                        start_time DATETIME(6) NOT NULL,
+                                        end_time DATETIME(6) NOT NULL,
+                                        PRIMARY KEY (auction_id),
+                                        FOREIGN KEY (user_id) REFERENCES users(user_id),
+                                        FOREIGN KEY (category_id) REFERENCES categories(category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- #Tabela Auction
+-- Categories Table
+CREATE TABLE IF NOT EXISTS categories (
+                                          category_id BIGINT NOT NULL AUTO_INCREMENT,
+                                          category_name VARCHAR(255) NOT NULL UNIQUE,
+                                          description VARCHAR(255),
+                                          PRIMARY KEY (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `auctions` (
-                            `auction_id` bigint NOT NULL AUTO_INCREMENT,
-                            `seller_id` bigint DEFAULT NULL,
-                            `category_id` bigint DEFAULT NULL,
-                            `title` varchar(255) DEFAULT NULL,
-                            `description` varchar(255) DEFAULT NULL,
-                            `startingPrice` decimal(10,2) NOT NULL DEFAULT '0.00',
-                            `currentPrice` decimal(10,2) DEFAULT '0.00',
-                            `startTime` timestamp NULL DEFAULT NULL,
-                            `endTime` timestamp NULL DEFAULT NULL,
-                            `current_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-                            `end_time` datetime(6) DEFAULT NULL,
-                            `start_time` datetime(6) DEFAULT NULL,
-                            `starting_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-                            PRIMARY KEY (`auction_id`),
-                            KEY `seller_id` (`seller_id`),
-                            KEY `category_id` (`category_id`),
-                            CONSTRAINT `auctions_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`user_id`),
-                            CONSTRAINT `auctions_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
--- #Tabela Autentykacji
+-- Users Table
+CREATE TABLE IF NOT EXISTS users (
+                                     user_id BIGINT NOT NULL AUTO_INCREMENT,
+                                     username VARCHAR(255) NOT NULL UNIQUE,
+                                     email VARCHAR(255) NOT NULL,
+                                     password VARCHAR(255) NOT NULL,
+                                     enabled BOOLEAN NOT NULL,
+                                     PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `authorities` (
-                               `username` varchar(255) NOT NULL,
-                               `authority` varchar(255) NOT NULL,
-                               PRIMARY KEY (`username`,`authority`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
--- #Tabela Licytacji
+-- Roles Table
+CREATE TABLE IF NOT EXISTS roles (
+                                     role_id INT NOT NULL AUTO_INCREMENT,
+                                     name VARCHAR(255) NOT NULL UNIQUE,
+                                     PRIMARY KEY (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `bids` (
-                        `bid_id` bigint NOT NULL AUTO_INCREMENT,
-                        `auction_id` bigint DEFAULT NULL,
-                        `user_id` bigint DEFAULT NULL,
-                        `bidTime` datetime(6) DEFAULT NULL,
-                        `bid_amount` decimal(38,2) DEFAULT NULL,
-                        `bid_time` datetime(6) DEFAULT NULL,
-                        PRIMARY KEY (`bid_id`),
-                        KEY `auction_id` (`auction_id`),
-                        KEY `user_id` (`user_id`),
-                        CONSTRAINT `bids_ibfk_1` FOREIGN KEY (`auction_id`) REFERENCES `auctions` (`auction_id`),
-                        CONSTRAINT `bids_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
--- #Tabela Kategirii
+-- Authorities Table
+CREATE TABLE IF NOT EXISTS authorities (
+                                           authority_id BIGINT NOT NULL AUTO_INCREMENT,
+                                           user_id BIGINT NOT NULL,
+                                           authority VARCHAR(255) NOT NULL,
+                                           PRIMARY KEY (authority_id),
+                                           FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `categories` (
-                              `category_id` bigint NOT NULL AUTO_INCREMENT,
-                              `categoryName` varchar(255) DEFAULT NULL,
-                              `description` varchar(255) DEFAULT NULL,
-                              `category_name` varchar(255) DEFAULT NULL,
-                              PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
--- #Tabela Roli
+-- Bids Table
+CREATE TABLE IF NOT EXISTS bids (
+                                    bid_id BIGINT NOT NULL AUTO_INCREMENT,
+                                    auction_id BIGINT NOT NULL,
+                                    user_id BIGINT NOT NULL,
+                                    bid_amount DECIMAL(10,2),
+                                    bid_time DATETIME(6) NOT NULL,
+                                    PRIMARY KEY (bid_id),
+                                    FOREIGN KEY (auction_id) REFERENCES auctions(auction_id),
+                                    FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `roles` (
-                         `role_id` int NOT NULL AUTO_INCREMENT,
-                         `name` varchar(255) DEFAULT NULL,
-                         PRIMARY KEY (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
--- #Tabela Transaction Ratings
+-- TransactionRatings Table
+CREATE TABLE IF NOT EXISTS transaction_ratings (
+                                                   transaction_rating_id BIGINT NOT NULL AUTO_INCREMENT,
+                                                   user_id BIGINT,
+                                                   ratingTime DATETIME(6),
+                                                   rating INT,
+                                                   comment VARCHAR(255),
+                                                   PRIMARY KEY (transaction_rating_id),
+                                                   FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-create table if not exists `transaction_ratings` (
-                                       `transaction_rating_id` bigint NOT NULL AUTO_INCREMENT,
-                                       `user_id` bigint DEFAULT NULL,
-                                       `ratingTime` datetime(6) DEFAULT NULL,
-                                       `rating` int DEFAULT NULL,
-                                       `comment` varchar(255) DEFAULT NULL,
-                                       `rating_time` datetime(6) DEFAULT NULL,
-                                       PRIMARY KEY (`transaction_rating_id`),
-                                       KEY `user_id` (`user_id`),
-                                       CONSTRAINT `transaction_ratings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
-#Tabela Użytkowników
-
-create table if not exists users (
-                                    `user_id` bigint NOT NULL AUTO_INCREMENT,
-                                    `username` varchar(255) DEFAULT NULL,
-                                    `email` varchar(255) DEFAULT NULL,
-                                    `password` varchar(255) DEFAULT NULL,
-                                    `enabled` bit(1) NOT NULL,
-                                    PRIMARY KEY (`user_id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
-#Tabela Roli Użytkowników
-
-create table if not exists `users_role` (
-                              `user_id` bigint NOT NULL,
-                              `role_id` int NOT NULL,
-                              PRIMARY KEY (`user_id`,`role_id`),
-                              KEY `FKeejqlb4gq1av9540jg66ju2pi` (`role_id`),
-                              CONSTRAINT `FKeejqlb4gq1av9540jg66ju2pi` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`),
-                              CONSTRAINT `FKqpe36jsen4rslwfx5i6dj2fy8` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-;
+-- UsersRoles Join Table
+CREATE TABLE IF NOT EXISTS users_role (
+                                          user_id BIGINT NOT NULL,
+                                          role_id INT NOT NULL UNIQUE,
+                                          PRIMARY KEY (user_id, role_id),
+                                          FOREIGN KEY (user_id) REFERENCES users(user_id),
+                                          FOREIGN KEY (role_id) REFERENCES roles(role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

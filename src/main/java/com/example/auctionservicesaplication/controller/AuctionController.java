@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -38,16 +39,25 @@ public class AuctionController {
         this.userService = userService;
     }
 
-    // Fetches and displays a list of all auctions.
     @GetMapping
-    public String getAllAuctions(Model model) {
-        model.addAttribute("auctions", auctionService.getAllAuction());
+    public String getAllAuctions(Model model, Authentication authentication) {
+        if (authentication != null) {
+            String username = authentication.getName();
+            User loggedInUser = userService.getUserByUsername(username);
+
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+                model.addAttribute("auctions", auctionService.getAllAuction());
+            } else {
+                model.addAttribute("auctions", auctionService.getAuctionsBySeller(loggedInUser));
+            }
+        }
         return "auctions";
     }
 
     // Fetches and displays details for a specific auction.
     @GetMapping("/{auctionId}")
-    public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
+    public String getAuctionDetails(@PathVariable Long auctionId, Model model) {
         model.addAttribute("auction", getAuctionOrThrow(auctionId));
         return "auctionDetails";
     }
@@ -62,7 +72,13 @@ public class AuctionController {
 
     // Handles the process of creating a new auction.
     @PostMapping("/create")
-    public String createAuction(@ModelAttribute Auction auction, Model model, Authentication authentication) {
+    public String createAuction(@ModelAttribute Auction auction, BindingResult bindingResult, Model model, Authentication authentication) {
+        // Validate auction dates
+        if (!validateAuctionDates(auction, bindingResult)) {
+            // Return to form with error if validation fails
+            model.addAttribute("categories", categoryService.getAllCategories());
+            return "createForm";
+        }
         // Check if the user is authenticated
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -86,7 +102,7 @@ public class AuctionController {
 
     // Retrieves the form for editing an existing auction.
     @GetMapping("/{auctionId}/edit")
-    public String getEditForm(@PathVariable BigDecimal auctionId, Model model) {
+    public String getEditForm(@PathVariable Long auctionId, Model model) {
         Auction auction = getAuctionOrThrow(auctionId);
         model.addAttribute("auction", auction);
         model.addAttribute("categories", categoryService.getAllCategories());
@@ -101,7 +117,15 @@ public class AuctionController {
 
     // Handles the process of updating an existing auction.
     @PostMapping("/{auctionId}/edit")
-    public String editAuction(@ModelAttribute Auction auction, @PathVariable BigDecimal auctionId) {
+    public String editAuction(@ModelAttribute Auction auction, BindingResult bindingResult, @PathVariable Long auctionId, Model model) {
+        // Validate auction dates
+        if (!validateAuctionDates(auction, bindingResult)) {
+            // Return to form with error if validation fails
+            model.addAttribute("auction", auction);
+            model.addAttribute("categories", categoryService.getAllCategories());
+            return "editFormAuction";
+        }
+
         getAuctionOrThrow(auctionId); // Ensure the auction exists, or throw an exception
         auctionService.editAuction(auctionId, auction);
         return "redirect:/auctions";
@@ -109,10 +133,19 @@ public class AuctionController {
 
     // Handles the process of deleting an existing auction.
     @GetMapping("/{auctionId}/delete")
-    public String deleteAuction(@PathVariable BigDecimal auctionId) {
+    public String deleteAuction(@PathVariable Long auctionId) {
         getAuctionOrThrow(auctionId); // Ensure the auction exists, or throw an exception
         auctionService.deleteAuction(auctionId);
         return "redirect:/auctions";
+    }
+
+    // Handles validation of the auction's start and end dates to ensure that the start date is before the end date
+    private boolean validateAuctionDates(Auction auction, BindingResult bindingResult) {
+        if (auction.getStartTime() != null && auction.getEndTime() != null && auction.getStartTime().isAfter(auction.getEndTime())) {
+            bindingResult.rejectValue("startTime", "error.startTime", "Start time must be before end time.");
+            return false;
+        }
+        return true;
     }
 
     // Handles exceptions when an auction is not found, displaying an error message.
@@ -123,7 +156,7 @@ public class AuctionController {
     }
 
     // Helper method to fetch an auction by its ID or throw an exception if not found.
-    private Auction getAuctionOrThrow(BigDecimal auctionId) {
+    private Auction getAuctionOrThrow(Long auctionId) {
         return auctionService.getAuctionById(auctionId);
     }
 }

@@ -7,13 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 // Represents a bid made on an auction.
+@Entity
+@Table(name = "bids")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "bids")
 public class Bid {
 
     @Id
@@ -34,6 +35,30 @@ public class Bid {
     // Fields for the bid amount and the time when the bid was made.
     @Column(name = "bid_amount")
     private BigDecimal bidAmount;
-    @Column(name = "bidTime", nullable = false)
+    @Column(name = "bid_time", nullable = false)
     private LocalDateTime bidTime;
+
+    @Override
+    public String toString() {
+        return "Bid{" +
+                "id=" + id +
+                ", auctionId=" + (auction != null ? auction.getId() : "null") +
+                ", bidder=" + (bidder != null ? bidder.getUsername() : "null") +
+                ", bidAmount=" + bidAmount +
+                ", bidTime=" + bidTime +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bid bid = (Bid) o;
+        return Objects.equals(id, bid.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
