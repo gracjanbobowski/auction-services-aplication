@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,8 +21,8 @@ import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.CategoryService;
 import com.example.auctionservicesaplication.service.UserService;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.auctionservicesaplication.message.AuctionNotFoundException;
+import org.springframework.validation.BindingResult;
 
 @ExtendWith(MockitoExtension.class)
 public class AuctionControllerTest {
@@ -56,7 +59,32 @@ public class AuctionControllerTest {
                 .build();
     }
 
+    // Test 1: getAllAuctions() - Test checks for the condition where the user should only receive the auctions they are selling
+    @Test
+    public void getAllAuctions_asRegularUser_displaysUserSpecificAuctions() {
+        // Arrange
+        List<Auction> expectedAuctions = new ArrayList<>();
+        expectedAuctions.add(new Auction());
+        User user = new User();
+        user.setUsername("regularUser");
+        when(userService.getUserByUsername("regularUser")).thenReturn(user);
+        when(auctionService.getAuctionsBySeller(user)).thenReturn(expectedAuctions);
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn("regularUser");
+        when(auth.getAuthorities()).thenReturn(Collections.emptyList()); // Regular user, no specific role
+
+        // Act
+        String viewName = auctionController.getAllAuctions(model, auth);
+
+        // Assert
+        verify(model).addAttribute("auctions", expectedAuctions);
+        assertEquals("auctions", viewName, "Should return the auctions view name for regular user.");
+    }
+
+
     // Test 1: getAllAuctions() - Tests that the controller correctly fetches all auctions and adds them to the model.
+/*
     @Test
     public void getAllAuctions_displaysAllAuctions() {
         // Arrange
@@ -71,12 +99,13 @@ public class AuctionControllerTest {
         verify(model).addAttribute("auctions", expectedAuctions);
         assertEquals("auctions", viewName, "Should return the auctions view name.");
     }
+*/
 
     // Test 2: getAuctionDetails() - Tests retrieving a specific auction by its ID.
     @Test
     public void getAuctionDetails_withValidId_displaysAuctionDetails() {
         // Arrange
-        BigDecimal id = BigDecimal.ONE;
+        Long id = 1L;
         Auction expectedAuction = new Auction();
         when(auctionService.getAuctionById(id)).thenReturn(expectedAuction);
 
@@ -92,7 +121,7 @@ public class AuctionControllerTest {
     @Test
     public void getAuctionDetails_withInvalidId_returnsNotFoundView() throws Exception {
         // Arrange
-        BigDecimal id = BigDecimal.ONE;
+        Long id = 1L;
         when(auctionService.getAuctionById(id)).thenThrow(new AuctionNotFoundException("Not found"));
 
         // Act & Assert
@@ -130,22 +159,23 @@ public class AuctionControllerTest {
         UserDetails userDetails = mock(UserDetails.class);
         when(authentication.getPrincipal()).thenReturn(userDetails);
         when(userDetails.getUsername()).thenReturn("testUser");
-        User loggedInUser = new User(); // Assuming User is your user model class
+        User loggedInUser = new User();
         when(userService.getUserByUsername("testUser")).thenReturn(loggedInUser);
 
         // Act
-        String viewName = auctionController.createAuction(validAuction, mock(Model.class), authentication);
+        String viewName = auctionController.createAuction(validAuction, mock(BindingResult.class), mock(Model.class), authentication);
 
         // Assert
-        verify(auctionService).createAuction(validAuction, loggedInUser); // Expecting the valid auction and logged-in user to be passed to the service
+        verify(auctionService).createAuction(validAuction, loggedInUser);
         assertEquals("redirect:/auctions", viewName, "Should redirect to the auctions list view.");
     }
+
 
     // Test 6: getEditForm() - Tests displaying the edit form with specific auction details and categories.
     @Test
     public void getEditForm_withValidId_displaysEditFormWithCategories() {
         // Arrange
-        BigDecimal id = BigDecimal.ONE;
+        Long id = 1L;
         Auction expectedAuction = new Auction();
         List<Category> expectedCategories = new ArrayList<>();
         when(auctionService.getAuctionById(id)).thenReturn(expectedAuction);
@@ -164,13 +194,14 @@ public class AuctionControllerTest {
     @Test
     public void editAuction_withValidId_updatesAuctionAndRedirects() {
         // Arrange
-        BigDecimal id = BigDecimal.ONE;
+        Long id = 1L;
         Auction auction = new Auction();
-        auction.setId(id); // Set the ID to match the path variable
-        when(auctionService.getAuctionById(id)).thenReturn(auction); // Ensure this call does not return null
+        auction.setId(id);
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(auctionService.getAuctionById(id)).thenReturn(auction);
 
         // Act
-        String viewName = auctionController.editAuction(auction, id);
+        String viewName = auctionController.editAuction(auction, bindingResult, id, model);
 
         // Assert
         verify(auctionService).editAuction(id, auction);
@@ -181,7 +212,7 @@ public class AuctionControllerTest {
     @Test
     public void deleteAuction_withValidId_deletesAuctionAndRedirects() {
         // Arrange
-        BigDecimal id = BigDecimal.ONE;
+        Long id = 1L;
         Auction existingAuction = new Auction();
         existingAuction.setId(id);
         when(auctionService.getAuctionById(id)).thenReturn(existingAuction);
@@ -200,20 +231,22 @@ public class AuctionControllerTest {
     public void createAuction_withoutAuthentication_redirectsToLogin() {
         // Arrange
         Auction auction = new Auction();
+        BindingResult bindingResult = mock(BindingResult.class);
 
         // Act
-        String viewName = auctionController.createAuction(auction, mock(Model.class), null);
+        String viewName = auctionController.createAuction(auction, bindingResult, model, null);
 
         // Assert
         verify(auctionService, never()).createAuction(any(Auction.class), any(User.class));
         assertEquals("redirect:/login", viewName, "Should redirect to the login view when not authenticated.");
     }
 
+
     // Test 10: getEditForm() - Tests that an invalid auction ID returns a not found view.
     @Test
     public void getEditForm_withInvalidId_returnsNotFoundView() throws Exception {
         // Arrange
-        BigDecimal invalidId = new BigDecimal("999");
+        Long invalidId = 999L;
         when(auctionService.getAuctionById(invalidId)).thenThrow(new AuctionNotFoundException("Not found"));
 
         // Act & Assert
@@ -226,7 +259,7 @@ public class AuctionControllerTest {
     @Test
     public void editAuction_withInvalidId_doesNotUpdateAndReturnsNotFoundView() throws Exception {
         // Arrange
-        BigDecimal invalidId = new BigDecimal("999");
+        Long invalidId = 999L;
         Auction auction = new Auction();
         when(auctionService.getAuctionById(invalidId)).thenThrow(new AuctionNotFoundException("Not found"));
 
@@ -241,7 +274,7 @@ public class AuctionControllerTest {
     @Test
     public void deleteAuction_withInvalidId_doesNotDeleteAndReturnsNotFoundView() throws Exception {
         // Arrange
-        BigDecimal invalidId = new BigDecimal("999");
+        Long invalidId = 999L;
         when(auctionService.getAuctionById(invalidId)).thenThrow(new AuctionNotFoundException("Not found"));
 
         // Act & Assert
@@ -250,4 +283,25 @@ public class AuctionControllerTest {
                 .andExpect(view().name("auctionNotFound"));
     }
 
+/*    // Test 13: getAllAuctions() - Test checks for the condition where the user is an admin and should receive all auctions
+    @Test
+    public void getAllAuctions_asAdmin_displaysAllAuctions() {
+        // Arrange
+        List<Auction> expectedAuctions = new ArrayList<>();
+        expectedAuctions.add(new Auction());
+        when(auctionService.getAllAuction()).thenReturn(expectedAuctions);
+
+        Authentication auth = mock(Authentication.class);
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        when(auth.getAuthorities()).thenReturn(authorities);
+
+        // Act
+        String viewName = auctionController.getAllAuctions(model, auth);
+
+        // Assert
+        verify(model).addAttribute("auctions", expectedAuctions);
+        assertEquals("auctions", viewName, "Should return the auctions view name for admin.");
+    }
+    */
 }

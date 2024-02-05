@@ -15,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
@@ -31,6 +33,8 @@ public class BidController {
     private final BidService bidService;
     private final UserService userService;
     private final EmailService emailService;
+    private static final Logger logger = LoggerFactory.getLogger(BidController.class);
+
 
     @Autowired
     public BidController(AuctionService auctionService, BidService bidService, UserService userService, EmailService emailService) {
@@ -50,7 +54,7 @@ public class BidController {
 
     // Fetches and displays the bids for a specific auction.
     @GetMapping("/{auctionId}/bids")
-    public String getAuctionBids(@PathVariable BigDecimal auctionId, Model model) {
+    public String getAuctionBids(@PathVariable Long auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         List<Bid> bids = bidService.getBidsByAuction(auction);
         model.addAttribute("auction", auction);
@@ -60,7 +64,7 @@ public class BidController {
 
     // Fetches and displays details for a specific auction.
     @GetMapping("/{auctionId}")
-    public String getAuctionDetails(@PathVariable BigDecimal auctionId, Model model) {
+    public String getAuctionDetails(@PathVariable Long auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
         return "auctionDetails";
@@ -68,7 +72,7 @@ public class BidController {
 
     // Fetches and displays the bids for a specific auction along with the current highest bid.
     @GetMapping("/{auctionId}/bidsForAuction")
-    public String getBidsForAuction(@PathVariable BigDecimal auctionId, Model model) {
+    public String getBidsForAuction(@PathVariable Long auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         List<Bid> bids = bidService.getBidsByAuction(auction);
         BigDecimal currentBidAmount = auction.getCurrentPrice();
@@ -80,7 +84,7 @@ public class BidController {
 
     // Fetches the form for placing a new bid on an auction.
     @GetMapping("/{auctionId}/details/placeBid")
-    public String getPlaceBidForm(@PathVariable BigDecimal auctionId, Model model) {
+    public String getPlaceBidForm(@PathVariable Long auctionId, Model model) {
         Auction auction = auctionService.getAuctionById(auctionId);
         model.addAttribute("auction", auction);
 
@@ -98,7 +102,7 @@ public class BidController {
     // Handles the process of placing a new bid on an auction.
     @PostMapping("/{auctionId}/placeBid")
     public String placeBid(
-            @PathVariable BigDecimal auctionId,
+            @PathVariable Long auctionId,
             @ModelAttribute("newBid") @Valid Bid newBid,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
@@ -139,7 +143,12 @@ public class BidController {
             auctionService.updateAuction(auction);
 
             // Send a bid confirmation to the seller's email.
-            bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
+            try {
+                bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
+            } catch (Exception e) {
+                // Log the exception and continue
+                logger.error("Error sending email: " + e.getMessage(), e);
+            }
         }
 
         // Redirect to the bids page for the auction.
@@ -148,11 +157,13 @@ public class BidController {
 
     // Private method for bid validation.
     private void validateBid(Bid newBid, Auction auction, BindingResult bindingResult) {
-        List<Bid> bids = bidService.getBidsByAuction(auction);
+        BigDecimal currentPrice = auction.getCurrentPrice();
+        BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
 
-        // Check if the new bid is higher than the current highest bid.
-        if (bids.stream().anyMatch(bid -> bid.getBidAmount().compareTo(newBid.getBidAmount()) >= 0)) {
-            bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current highest bid.");
+        // Check if the new bid is higher than both the current auction price and the current highest bid.
+        if (newBid.getBidAmount().compareTo(currentPrice) <= 0 || newBid.getBidAmount().compareTo(highestBidAmount) <= 0) {
+            bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current price and the current highest bid.");
         }
     }
+
 }

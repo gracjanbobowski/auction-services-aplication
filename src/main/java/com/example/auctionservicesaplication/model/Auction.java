@@ -6,22 +6,24 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 // Represents an auction entity in the application.
-@Data
 @Entity
 @Table(name = "auctions")
+@Getter @Setter
+@NoArgsConstructor
 public class Auction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
-    private BigDecimal id;
+    private Long id;
 
     // Many-to-one relationship with User. A user can be a seller of many auctions.
     @ManyToOne
-    @JoinColumn(name = "seller_id")
+    @JoinColumn(name = "user_id")
     private User seller;
 
     // Many-to-one relationship with Category. An auction belongs to one category.
@@ -52,16 +54,31 @@ public class Auction {
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Bid> bids;
 
-    // Constructor initializes the current price to zero.
-    public Auction() {
-        this.currentPrice = BigDecimal.ZERO;
+    @Override
+    public String toString() {
+        return "Auction{" +
+                "id=" + id +
+                ", seller=" + (seller != null ? seller.getUsername() : "null") +
+                ", category=" + (category != null ? category.getCategoryName() : "null") +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", startingPrice=" + startingPrice +
+                ", currentPrice=" + currentPrice +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
     }
 
-    public void setCurrentPrice(BigDecimal currentPrice) {
-        this.currentPrice = currentPrice;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Auction auction = (Auction) o;
+        return Objects.equals(id, auction.id);
     }
 
-    public Set<Bid> getBids() {
-        return bids;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
