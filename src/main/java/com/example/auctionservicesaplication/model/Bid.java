@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -33,6 +34,7 @@ public class Bid {
     private User bidder;
 
     // Fields for the bid amount and the time when the bid was made.
+    @Min(0)
     @Column(name = "bid_amount")
     private BigDecimal bidAmount;
     @Column(name = "bid_time", nullable = false)

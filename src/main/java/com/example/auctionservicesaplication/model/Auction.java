@@ -3,6 +3,7 @@ package com.example.auctionservicesaplication.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,8 +40,10 @@ public class Auction {
     private String description;
 
     // Fields for the starting and current price of the auction.
+    @Min(0)
     @Column(name = "starting_price", columnDefinition = "DECIMAL(10, 2) DEFAULT 0.0", nullable = false)
     private BigDecimal startingPrice;
+    @Min(0)
     @Column(name = "current_price", nullable = false, columnDefinition = "DECIMAL(10, 2) default 0.0")
     private BigDecimal currentPrice;
 

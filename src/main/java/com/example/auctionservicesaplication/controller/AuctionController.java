@@ -8,6 +8,8 @@ import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.BidService;
 import com.example.auctionservicesaplication.service.CategoryService;
 import com.example.auctionservicesaplication.service.UserService;
+import com.example.auctionservicesaplication.util.ControllerUtil;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -52,6 +55,10 @@ public class AuctionController {
                 model.addAttribute("auctions", auctionService.getAuctionsBySeller(loggedInUser));
             }
         }
+
+        // Determine the home redirect URL based on the user's role
+        model.addAttribute("homeRedirectUrl", ControllerUtil.determineHomeRedirectUrl(authentication));
+
         return "auctions";
     }
 
@@ -75,13 +82,21 @@ public class AuctionController {
     public String createAuction(@ModelAttribute Auction auction, BindingResult bindingResult, Model model, Authentication authentication) {
         // Validate auction dates
         if (!validateAuctionDates(auction, bindingResult)) {
-            // Return to form with error if validation fails
+            // If validation fails, add the submitted auction back to the model
+            model.addAttribute("auction", auction);
             model.addAttribute("categories", categoryService.getAllCategories());
-            return "createForm";
+            if (auction.getStartTime() != null) {
+                model.addAttribute("formattedStartTime", auction.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+            }
+            if (auction.getEndTime() != null) {
+                model.addAttribute("formattedEndTime", auction.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+            }
+            // Return to form with error messages and preserve the entered data
+            return "createdForm";
         }
         // Check if the user is authenticated
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String loggedInUsername = userDetails.getUsername();
 
             // Retrieve the User object based on the username
@@ -117,12 +132,19 @@ public class AuctionController {
 
     // Handles the process of updating an existing auction.
     @PostMapping("/{auctionId}/edit")
-    public String editAuction(@ModelAttribute Auction auction, BindingResult bindingResult, @PathVariable Long auctionId, Model model) {
+    public String editAuction(@Valid @ModelAttribute Auction auction, BindingResult bindingResult, @PathVariable Long auctionId, Model model) {
         // Validate auction dates
-        if (!validateAuctionDates(auction, bindingResult)) {
-            // Return to form with error if validation fails
+        if (!validateAuctionDates(auction, bindingResult) || bindingResult.hasErrors()) {
+            // If validation fails, add the submitted auction back to the model
             model.addAttribute("auction", auction);
             model.addAttribute("categories", categoryService.getAllCategories());
+            if (auction.getStartTime() != null) {
+                model.addAttribute("formattedStartTime", auction.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+            }
+            if (auction.getEndTime() != null) {
+                model.addAttribute("formattedEndTime", auction.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+            }
+            // Return to form with error messages and preserve the entered data
             return "editFormAuction";
         }
 
@@ -142,7 +164,8 @@ public class AuctionController {
     // Handles validation of the auction's start and end dates to ensure that the start date is before the end date
     private boolean validateAuctionDates(Auction auction, BindingResult bindingResult) {
         if (auction.getStartTime() != null && auction.getEndTime() != null && auction.getStartTime().isAfter(auction.getEndTime())) {
-            bindingResult.rejectValue("startTime", "error.startTime", "Start time must be before end time.");
+            bindingResult.rejectValue("endTime", "error.endTime", "Please make sure the end date is after the start date.");
+            bindingResult.rejectValue("startTime", "error.startTime", "Please choose start date earlier of the end date.");
             return false;
         }
         return true;

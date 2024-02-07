@@ -186,9 +186,31 @@ public class UserController {
     // Handles the user edit process.
     @PostMapping("/{userId}/edit")
     @Secured("ROLE_ADMIN")
-    public String editUser(@PathVariable String userId, @ModelAttribute User editedUser) {
+    public String editUser(@PathVariable String userId, @ModelAttribute @Valid User editedUser, BindingResult bindingResult, Model model) {
         Long userIdLong = Long.parseLong(userId);
+
+        // Checks for form validation errors. If errors are found, returns to the edit form with an error message.
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "Something went wrong. Please try again.");
+            return "editForm";
+        }
+
+        // Checks if a user with the same username already exists and is not the current user being edited.
+        Optional<User> existingUser = userRepository.findByUsername(editedUser.getUsername());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(userIdLong)) {
+            bindingResult.rejectValue("username", "error.user", "Username already exists");
+            return "editForm";
+        }
+
+        // Encodes the password using the password encoder.
+        editedUser.setPassword(passwordEncoder.encode(editedUser.getPassword()));
+
+        // Update the user's details in the database.
         userService.editUser(BigDecimal.valueOf(userIdLong), editedUser);
+
+        // Optionally, add a success message to the model.
+        model.addAttribute("success", "User details updated successfully.");
+
         return "redirect:/users";
     }
 

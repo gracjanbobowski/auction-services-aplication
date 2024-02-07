@@ -7,6 +7,7 @@ import com.example.auctionservicesaplication.service.AuctionService;
 import com.example.auctionservicesaplication.service.BidService;
 import com.example.auctionservicesaplication.service.EmailService;
 import com.example.auctionservicesaplication.service.UserService;
+import com.example.auctionservicesaplication.util.ControllerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,9 +47,13 @@ public class BidController {
 
     // Retrieves and displays a list of all auctions for bidding.
     @GetMapping
-    public String getAllBids(Model model) {
+    public String getAllBids(Model model, Authentication authentication) {
         List<Auction> auctions = auctionService.getAllAuction();
         model.addAttribute("auctions", auctions);
+
+        // Determine the home redirect URL based on the user's role
+        model.addAttribute("homeRedirectUrl", ControllerUtil.determineHomeRedirectUrl(authentication));
+
         return "bids";
     }
 
@@ -105,20 +110,14 @@ public class BidController {
             @PathVariable Long auctionId,
             @ModelAttribute("newBid") @Valid Bid newBid,
             BindingResult bindingResult,
-            RedirectAttributes redirectAttributes) {
+            Model model) {
 
-        // Retrieve auction and current authentication details.
+        // Retrieve auction details.
         Auction auction = auctionService.getAuctionById(auctionId);
-
-        // Validate the bid form.
-        if (bindingResult.hasErrors()) {
-            return "placeBidForm";
-        }
 
         // Retrieve bidder information.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String bidderUsername = authentication.getName();
-        User bidder = userService.getUserByUsername(bidderUsername);
+        User bidder = userService.getUserByUsername(authentication.getName());
 
         // Set details for the new bid.
         newBid.setAuction(auction);
@@ -126,44 +125,51 @@ public class BidController {
         newBid.setBidTime(LocalDateTime.now());
 
         // Validate the bid for correctness.
-        validateBid(newBid, auction, bindingResult);
-
-        // If there are errors, return to the form.
-        if (bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors() || !validateBid(newBid, auction, bindingResult)) {
+            model.addAttribute("auction", auction);
+            model.addAttribute("newBid", newBid);
             return "placeBidForm";
         }
 
         // Save the bid to the database.
         bidService.createBid(newBid);
 
-        // Update auction price if the new bid is higher.
-        BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
-        if (newBid.getBidAmount().compareTo(highestBidAmount) > 0) {
-            auction.setCurrentPrice(newBid.getBidAmount());
-            auctionService.updateAuction(auction);
-
-            // Send a bid confirmation to the seller's email.
-            try {
-                bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
-            } catch (Exception e) {
-                // Log the exception and continue
-                logger.error("Error sending email: " + e.getMessage(), e);
-            }
-        }
+        // Update auction price if the new bid is higher and send confirmation email.
+        updateAuctionPriceAndSendConfirmationIfNeeded(auction, newBid, bindingResult);
 
         // Redirect to the bids page for the auction.
         return "redirect:/bids/" + auctionId + "/bidsForAuction";
     }
 
-    // Private method for bid validation.
-    private void validateBid(Bid newBid, Auction auction, BindingResult bindingResult) {
+    // Helper method to update auction price if the new bid is higher and send confirmation email.
+    private void updateAuctionPriceAndSendConfirmationIfNeeded(Auction auction, Bid newBid, BindingResult bindingResult) {
+        if (validateBid(newBid, auction, bindingResult)) {
+            auction.setCurrentPrice(newBid.getBidAmount());
+            auctionService.updateAuction(auction);
+            sendBidConfirmationEmail(auction, newBid);
+        }
+    }
+
+    // Helper method to send bid confirmation email.
+    private void sendBidConfirmationEmail(Auction auction, Bid newBid) {
+        try {
+            bidService.sendBidConfirmation(auction.getSeller().getEmail(), newBid.getBidder().getUsername(), auction.getTitle());
+        } catch (Exception e) {
+            logger.error("Error sending email: " + e.getMessage(), e);
+        }
+    }
+
+    // Helper method for bid validation.
+    private boolean validateBid(Bid newBid, Auction auction, BindingResult bindingResult) {
         BigDecimal currentPrice = auction.getCurrentPrice();
         BigDecimal highestBidAmount = auctionService.getHighestBidAmount(auction);
 
         // Check if the new bid is higher than both the current auction price and the current highest bid.
         if (newBid.getBidAmount().compareTo(currentPrice) <= 0 || newBid.getBidAmount().compareTo(highestBidAmount) <= 0) {
-            bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current price and the current highest bid.");
+            bindingResult.rejectValue("bidAmount", "error.bid", "Bid amount must be higher than the current price.");
+            return false;
         }
+        return true;
     }
 
 }
