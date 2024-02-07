@@ -13,6 +13,8 @@
 </header>
 <section class="container mt-3">
     <form th:object="${auction}" th:action="@{/auctions/{auctionId}/edit(auctionId=${auction.id})}" method="post">
+        <input type="hidden" th:field="*{id}">
+
         <label for="title">Tytuł:</label>
         <input type="text" id="title" name="title" th:field="*{title}" class="form-control" required>
 
@@ -22,15 +24,27 @@
 
         <label for="startingPrice">Cena początkowa:</label>
         <input type="number" id="startingPrice" name="startingPrice" th:field="*{startingPrice}" class="form-control"
-               required>
+               min="0" required>
 
         <label for="startTime">Czas rozpoczęcia:</label>
         <input type="datetime-local" id="startTime" name="startTime"
-               th:value="${formattedStartTime}" class="form-control" required>
+               th:value="${formattedStartTime}"
+               class="form-control"
+               th:classappend="${#fields.hasErrors('startTime')} ? 'is-invalid'"
+               required>
+        <div th:if="${#fields.hasErrors('startTime')}"
+             th:errors="*{startTime}"
+             class="invalid-feedback">startTime Error</div>
 
         <label for="endTime">Czas zakończenia:</label>
         <input type="datetime-local" id="endTime" name="endTime"
-               th:value="${formattedEndTime}" class="form-control" required>
+               th:value="${formattedEndTime}"
+               class="form-control"
+               th:classappend="${#fields.hasErrors('endTime')} ? 'is-invalid'"
+               required>
+        <div th:if="${#fields.hasErrors('endTime')}"
+             th:errors="*{endTime}"
+             class="invalid-feedback">endTime Error</div>
 
         <label for="category">Kategoria:</label>
         <select id="category" name="category" th:field="*{category.id}" class="form-control" required>

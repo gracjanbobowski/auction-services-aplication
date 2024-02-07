@@ -46,7 +46,7 @@
                 <a th:href="@{/auctions/{auctionId}/edit(auctionId=${auction.id})} "
                    class="btn btn-primary btn-sm">Edit</a>
                 <a th:href="@{/auctions/{auctionId}/delete(auctionId=${auction.id})}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                   onclick="return confirm('Are you sure you want to delete this auction?')">Delete</a>
             </td>
         </tr>
         </tbody>
@@ -57,7 +57,7 @@
     <a th:href="@{/auctions/create}" class="btn btn-success">Create New Auction</a>
 
     <!-- Dodaj przycisk "Powrót" do strony głównej -->
-    <a th:href="@{/}" class="btn btn-primary">Powrót</a>
+    <a th:href="${homeRedirectUrl}" class="btn btn-primary">Powrót</a>
 </section>
 </body>
 </html>

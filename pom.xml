@@ -65,9 +65,14 @@
             <version>3.2.0</version>
         </dependency>
         <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.2.0.Final</version>
+        </dependency>
+        <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version> <!-- Aktualna wersja na dzień mojej wiedzy (styczeń 2022) -->
+            <version>2.0.1.Final</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -91,6 +96,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
     </dependencies>
 

@@ -12,23 +12,35 @@
     <h1>Edycja użytkownika</h1>
 </header>
 <section class="container mt-3">
-    <form th:action="@{/users/{userId}/edit(userId=${user.id})}" th:object="${user}" method="post">
+    <form th:action="@{/users/{userId}/edit(userId=${user.id})}" th:object="${user}" method="post" id="editForm">
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         <input type="hidden" name="userId" th:value="${user.id}"/>
 
         <div class="form-group">
             <label for="username">Username:</label>
-            <input type="text" class="form-control" id="username" th:field="*{username}" required/>
+            <input type="text" class="form-control" id="username" th:field="*{username}"
+                   th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" required/>
+            <div th:if="${#fields.hasErrors('username')}"
+                 th:errors="*{username}"
+                 class="invalid-feedback"></div>
         </div>
 
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="text" class="form-control" id="email" th:field="*{email}" required/>
+            <input type="text" class="form-control" id="email" th:field="*{email}"
+                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" required/>
+            <div th:if="${#fields.hasErrors('email')}"
+                 th:errors="*{email}"
+                 class="invalid-feedback"></div>
         </div>
 
         <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" class="form-control" id="password" th:field="*{password}" required/>
+            <input type="password" class="form-control" id="password" th:field="*{password}"
+                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" required/>
+            <div th:if="${#fields.hasErrors('password')}"
+                 th:errors="*{password}"
+                 class="invalid-feedback"></div>
         </div>
 
         <button type="submit" class="btn btn-success mt-2">Zapisz zmiany</button>
